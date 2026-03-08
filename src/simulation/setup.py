@@ -6,6 +6,7 @@ setup(
     name=package_name,
     version='0.0.0',
     packages=find_packages(exclude=['test']),
+    
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
@@ -14,7 +15,14 @@ setup(
         ('share/' + package_name + '/launch', 
             ['launch/launch_sim.py'])
     ],
-    install_requires=['setuptools'],
+    
+    install_requires=[
+        'setuptools',
+        'numpy,'
+        'matplotlib,'
+        'scipy'
+        ],
+    
     zip_safe=True,
     maintainer='gperegoy',
     maintainer_email='georgeperegoyr@gmail.com',
