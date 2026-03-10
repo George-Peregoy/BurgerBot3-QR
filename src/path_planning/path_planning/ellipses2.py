@@ -83,7 +83,7 @@ class Ellipse2():
         fnew : tuple
             New foci. Example (x, y).
         flag : int
-            1 if changing foci 1 elif 2 change focus 2.
+            1 if changing foci 1 elif 2 change foci 2.
         """
         
         # flag = 1 or 2; defines which foci is being replaced
