@@ -1,4 +1,5 @@
 from ellipses2 import Ellipse2, samp_ellipse
+import config
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
@@ -10,18 +11,6 @@ import time
 import pickle
 import os
 import heapq
-
-"""
-File is currenly being used for TurtleBot3 Burgerbots.
-
-L x W x H is 138mm x 178mm x 192 mm as per https://robotis.us/turtlebot-3-burger-rpi4-4gb-us/?srsltid=AfmBOopVrxRs5QI4pK4bpUb24-oybPMQE-vqyCv-mMc6h-KLMzfUwSD6.
-
-Will use a radius of 178/2 mm -> 89mm -> 0.089m with an added buffer of radius + 10% of radius. 
-"""
-
-BOT_RADIUS = 0.089
-RADIUS_BUFFER = BOT_RADIUS * 0.1
-BUFFER = BOT_RADIUS + RADIUS_BUFFER
 
 class Node:
     """
@@ -98,7 +87,9 @@ class RRTSharp:
     start : tuple
         Start position. Ex (5,5).
     goal : tuple
-        goal position. Ex (45, 45).
+        Goal position. Ex (45, 45).
+    bounds : tuple. Ex ((0,50), (0,50)).
+        Bounds of env using form ((x_min, x_max), (y_min, y_max))
     step_size : int
         How far to extend branches in steer. default=5
     time_limit : float
@@ -129,7 +120,7 @@ class RRTSharp:
         Animates the process and stores in save dir.
     """
     
-    def __init__(self, start: tuple, goal: tuple, step_size: int=5, time_limit: int=5, obstacles: list=[], e: error=None, seed=None, ellipse: Ellipse2 | None=None):
+    def __init__(self, start: tuple, goal: tuple, bounds: tuple, step_size: int=5, time_limit: int=5, obstacles: list=[], e: error=None, seed=None, ellipse: Ellipse2 | None=None):
         self.start = Node(start[0], start[1])
         self.goal = Node(goal[0], goal[1])
         self.step_size = step_size
@@ -146,8 +137,11 @@ class RRTSharp:
         if seed is not None:
             random.seed(seed)
 
-        self.buffer_obstacles = [obstacle.buffer(BUFFER) for obstacle in self.obstacles] # expanded for collision detection
-        
+        self.buffer_obstacles = [obstacle.buffer(config.BUFFER) for obstacle in self.obstacles] # expanded for collision detection
+        self.x_min = bounds[0][0]
+        self.x_max = bounds[0][1]    
+        self.y_min = bounds[1][0]    
+        self.y_max = bounds[1][1]
 
     def _euclidean_distance(self, node1: Node, node2: Node):
         """
@@ -262,7 +256,7 @@ class RRTSharp:
             return Node(x, y)
         else:
             # Uniform random sample in [0, 50] x [0, 50]
-            return Node(random.uniform(0, 50), random.uniform(0, 50))
+            return Node(random.uniform(self.x_min, self.x_max), random.uniform(self.y_min, self.y_max))
 
     def rrt_sharp(self):
         """
@@ -701,13 +695,15 @@ def main():
     # --- CONFIGURATION ---
     ENV_NUM = 0
     base_dir = os.path.abspath(os.path.dirname(__file__)) 
-    env_dir = os.path.join(base_dir, '..', '..', 'simulation', 'environments', f'environment_polygon_{ENV_NUM}.pickle')
+    env_dir = os.path.join(base_dir, '..', 'environments', f'environment_polygon_{ENV_NUM}.pickle')
     with open(env_dir, 'rb') as f:
         obstacles = pickle.load(f)
     obstacles = [np.array(poly) for poly in obstacles]
     
-    start = (10, 10)
-    goal = (5, 5)
+    start = config.START
+    goal = config.GOAL
+    bounds = config.BOUNDS
+    
     # obstacle_vertices = [
     #     [[15, 30], [15, 35], [35, 35], [35, 30]],
     #     [[30, 20], [30, 25], [40, 25], [40, 20]],
@@ -721,7 +717,7 @@ def main():
     # If using an ellipse:
     # s = sqrt((start.x - goal.x)**2 + (start.y - goal.y)**2)
     # ellipse = Ellipse2((start.x, start.y), (goal.x, goal.y), s)
-    rrt = RRTSharp(start, goal, obstacles=obstacles, e=e, time_limit=5, step_size=6, seed=71)
+    rrt = RRTSharp(start, goal, bounds, obstacles=obstacles, e=e, time_limit=5, step_size=6, seed=71)
 
     # rrt.rrt_sharp_animate(env_path=ENV_PATH, save_dir='./animations/', gif_name=f'rrtsharp_env{ENV_NUM}.gif', data_name=f'rrt_data_env{ENV_NUM}.pickle')
     path, nodes, e = rrt.rrt_sharp()
