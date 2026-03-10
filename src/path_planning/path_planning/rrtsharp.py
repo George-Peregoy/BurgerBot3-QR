@@ -1,14 +1,27 @@
+from ellipses2 import Ellipse2, samp_ellipse
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
+from shapely.geometry import Polygon, LineString
+import imageio
+from math import sqrt, floor
 import random
 import time
-import imageio
 import pickle
 import os
-from math import sqrt, floor
-from shapely.geometry import Polygon, LineString
-from ellipses2 import Ellipse2, samp_ellipse
-from matplotlib.patches import Ellipse
+import heapq
+
+"""
+File is currenly being used for TurtleBot3 Burgerbots.
+
+L x W x H is 138mm x 178mm x 192 mm as per https://robotis.us/turtlebot-3-burger-rpi4-4gb-us/?srsltid=AfmBOopVrxRs5QI4pK4bpUb24-oybPMQE-vqyCv-mMc6h-KLMzfUwSD6.
+
+Will use a radius of 178/2 mm -> 89mm -> 0.089m with an added buffer of radius + 10% of radius. 
+"""
+
+BOT_RADIUS = 0.089
+RADIUS_BUFFER = BOT_RADIUS * 0.1
+BUFFER = BOT_RADIUS + RADIUS_BUFFER
 
 class Node:
     """
@@ -104,6 +117,8 @@ class RRTSharp:
         List of coordinates. Ex [(5,5), (7,8)]
     ellipse : Ellipse2
         Used for sampling from ellipse. default=None.
+    buffer_obstacles : list
+        List of obstacles with vertice + buffer, used in collision detection for 2D objects.
 
     Methods
     -------
@@ -130,6 +145,9 @@ class RRTSharp:
         self.ellipse = ellipse
         if seed is not None:
             random.seed(seed)
+
+        self.buffer_obstacles = [obstacle.buffer(BUFFER) for obstacle in self.obstacles] # expanded for collision detection
+        
 
     def _euclidean_distance(self, node1: Node, node2: Node):
         """
@@ -223,7 +241,7 @@ class RRTSharp:
         True if collision free else False.
         """
         line_segment = LineString([(from_node.x, from_node.y), (to_node.x, to_node.y)])
-        for obs in self.obstacles:
+        for obs in self.buffer_obstacles:
             if obs.intersects(line_segment):
                 return False
         return True
@@ -258,7 +276,6 @@ class RRTSharp:
         e : error
             Error class that stores e_env and e_matrix for graph.
         """
-        import heapq
         start_time = time.time()
         t0 = 0
         ti = 0
@@ -489,7 +506,6 @@ class RRTSharp:
         gif_path = os.path.join(save_dir, gif_name)
         data_path = os.path.join(save_dir, data_name)
 
-        import heapq
         start_time = time.time()
         t0 = 0
         ti = 0
@@ -689,7 +705,7 @@ def main():
         obstacles = pickle.load(f)
     obstacles = [np.array(poly) for poly in obstacles]
     
-    start = (45, 45)
+    start = (10, 10)
     goal = (5, 5)
     # obstacle_vertices = [
     #     [[15, 30], [15, 35], [35, 35], [35, 30]],
@@ -704,8 +720,8 @@ def main():
     # If using an ellipse:
     # s = sqrt((start.x - goal.x)**2 + (start.y - goal.y)**2)
     # ellipse = Ellipse2((start.x, start.y), (goal.x, goal.y), s)
-    
     rrt = RRTSharp(start, goal, obstacles=obstacles, e=e, time_limit=5, step_size=6, seed=71)
+
     # rrt.rrt_sharp_animate(env_path=ENV_PATH, save_dir='./animations/', gif_name=f'rrtsharp_env{ENV_NUM}.gif', data_name=f'rrt_data_env{ENV_NUM}.pickle')
     path, nodes, e = rrt.rrt_sharp()
     rrt.plot_path(path)
