@@ -98,7 +98,7 @@ class RRTSharp:
     start : tuple
         Start position. Ex (5,5).
     goal : tuple
-        gaol position. Ex (45, 45).
+        goal position. Ex (45, 45).
     step_size : int
         How far to extend branches in steer. default=5
     time_limit : float
@@ -161,6 +161,7 @@ class RRTSharp:
             Second Node.
 
         Returns
+        -------
         euclidean_distance : float.
         """
         return sqrt((node1.x - node2.x)**2 + (node1.y - node2.y)**2)
@@ -225,7 +226,7 @@ class RRTSharp:
         rn = min(gamma * (np.log(n) / n) ** (1/d), self.step_size)
         return [node for node in self.nodes if self._euclidean_distance(node, new_node) <= rn]
 
-    def _is_collision_free(self, from_node, to_node):
+    def _is_collision_free(self, from_node: Node, to_node: Node):
         """
         Verifies that new egde does not collide with obstacles.
 
