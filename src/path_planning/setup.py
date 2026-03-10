@@ -16,7 +16,9 @@ setup(
     install_requires=[
         'setuptools',
         'numpy',
-        'matplotlib'
+        'matplotlib',
+        'imageio',
+        'shapely'
         ],
     
     zip_safe=True,

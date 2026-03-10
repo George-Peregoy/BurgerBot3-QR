@@ -1,3 +1,5 @@
 numpy>=1.21.5
 scipy>=1.8.0
 matplotlib>=3.5.1
+shapely>=2.1.2
+imageio>=2.37.2
