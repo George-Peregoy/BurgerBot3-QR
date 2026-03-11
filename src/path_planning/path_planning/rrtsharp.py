@@ -1,5 +1,5 @@
-from ellipses2 import Ellipse2, samp_ellipse
-import config
+from path_planning.ellipses2 import Ellipse2, samp_ellipse
+from path_planning import config
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
@@ -137,7 +137,8 @@ class RRTSharp:
         if seed is not None:
             random.seed(seed)
 
-        self.buffer_obstacles = [obstacle.buffer(config.BUFFER) for obstacle in self.obstacles] # expanded for collision detection
+        # scale buffer to fit grid 
+        self.buffer_obstacles = [obstacle.buffer(config.BUFFER/config.WORLD_SCALE) for obstacle in self.obstacles] # expanded for collision detection
         self.x_min = bounds[0][0]
         self.x_max = bounds[0][1]    
         self.y_min = bounds[1][0]    
