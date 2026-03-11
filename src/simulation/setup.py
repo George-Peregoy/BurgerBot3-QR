@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+from glob import glob
+import os
 
 package_name = 'simulation'
 
@@ -12,14 +14,14 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
 
-        ('share/' + package_name + '/launch', 
-            ['launch/launch_sim.py'])
+        (os.path.join('share', package_name, 'launch'),
+         glob('launch/*.py'))
     ],
     
     install_requires=[
         'setuptools',
-        'numpy,'
-        'matplotlib,'
+        'numpy',
+        'matplotlib',
         'scipy'
         ],
     

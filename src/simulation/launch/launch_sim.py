@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
@@ -23,11 +23,25 @@ def generate_launch_description():
         description='Empty gazebo world file'
     )
 
+    # use env file associated with world 
+
+    path_publisher_node = Node(
+        package = 'path_planning',
+        executable = 'path_publisher',
+        parameters = [{
+
+        }]
+    )
+
     # resolve args
     model = LaunchConfiguration('model')
     world = LaunchConfiguration('world')
 
-    print(f"world: {world}")
+    # set env variable for model
+    set_turtlebot_model = SetEnvironmentVariable(
+        'TURTLEBOT3_MODEL',
+        model
+    )
 
     # gazebo launch
     gazebo = IncludeLaunchDescription(
@@ -48,5 +62,7 @@ def generate_launch_description():
     return LaunchDescription([
         model_arg,
         world_arg,
-        gazebo
+        set_turtlebot_model,
+        gazebo,
+        path_publisher_node
     ])
