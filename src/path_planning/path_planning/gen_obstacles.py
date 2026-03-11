@@ -1,4 +1,4 @@
-import config
+from path_planning import config
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 import numpy as np
