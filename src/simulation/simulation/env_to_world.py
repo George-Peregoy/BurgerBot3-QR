@@ -16,22 +16,22 @@ def env_to_world(world_number: int = 0):
         World number which also corresponds to env number.
     """
     base_dir = os.path.abspath(os.path.dirname(__file__))
-    env_dir = os.path.join(base_dir, '..','..','path_planning', 'environments', f"environment_polygon_{world_number}.pickle")
-    world_dir = os.path.join(base_dir, "..", "worlds")
+    root_dir = os.path.join(base_dir, '..', '..', '..', '..', '..', '..')
+    env_dir = os.path.join(root_dir, 'src','path_planning', 'environments', \
+                           f"environment_polygon_{world_number}.pickle")
+    mesh_dir = os.path.join(root_dir, 'src', 'simulation', "meshes")
+    world_dir = os.path.join(root_dir, 'src', 'simulation', 'worlds')
 
     with open(env_dir, 'rb') as f:
         obstacles = pickle.load(f)
     obstacles = [np.array(poly) * config.WORLD_SCALE for poly in obstacles]
 
-    mesh_dir = os.path.join(base_dir, "..", "meshes")
     for i, obstacle in enumerate(obstacles):
         mesh_name = f"world_{world_number}_obstacle_{i}.stl"
         mesh_path = os.path.join(mesh_dir, mesh_name)
         _create_stl(vertices=obstacle, height=1, filename=mesh_path)
 
-    mesh_share_dir = get_package_share_directory('simulation')
-    mesh_share_path = os.path.join(mesh_share_dir, "meshes")
-    _create_world(mesh_share_path, world_number, world_dir)
+    _create_world(mesh_dir, world_number, world_dir)
 
 def _create_stl(vertices: np.ndarray, height: float, filename: str):
     """
@@ -46,33 +46,35 @@ def _create_stl(vertices: np.ndarray, height: float, filename: str):
 
     with open(filename, 'w') as f:
         
+        poly_center = np.mean(vertices, axis=0) # used to fix rendering
+
         # start mesh
         f.write('solid obstacle\n')
 
         # Bottom face
         for i in range(1, n-1):
             v0 = vertices[0]
-            v1 = vertices[i]
-            v2 = vertices[i + 1]
+            v1 = vertices[i + 1]
+            v2 = vertices[i]
             _write_triangle(
                 f, 
-                [v0[0], v0[1], 0], # conver to 3D point
-                [v1[0], v1[1], 0], 
-                [v2[0], v2[1], 0], 
-                normal=[0, 0, -1] # faces down 
+                [v0[0], v0[1], 0.1], # conver to 3D point
+                [v1[0], v1[1], 0.1], 
+                [v2[0], v2[1], 0.1], 
+                center=poly_center # faces down 
             )
 
         # top face
         for i in range(1, n-1):
             v0 = vertices[0]
-            v1 = vertices[i + 1]
-            v2 = vertices[i]
+            v1 = vertices[i]
+            v2 = vertices[i + 1]
             _write_triangle(
                 f,
                 [v0[0], v0[1], height], # conver to 3D point
                 [v1[0], v1[1], height], 
                 [v2[0], v2[1], height], 
-                normal=[0, 0, 1] # faces up
+                center=poly_center # faces up
             )
 
         # side faces
@@ -82,16 +84,18 @@ def _create_stl(vertices: np.ndarray, height: float, filename: str):
             
             _write_triangle(
                 f,
-                [v1_bottom[0], v1_bottom[1], 0],
-                [v2_bottom[0], v2_bottom[1], 0],
-                [v1_bottom[0], v1_bottom[1], height] # v2 top
+                [v1_bottom[0], v1_bottom[1], 0.1],
+                [v2_bottom[0], v2_bottom[1], 0.1],
+                [v2_bottom[0], v2_bottom[1], height], # v2 top
+                center = poly_center
             )
 
             _write_triangle(
                 f,
-                [v2_bottom[0], v2_bottom[1], 0],
-                [v2_bottom[0], v2_bottom[1], height],
-                [v1_bottom[0], v1_bottom[1], height] # top point
+                [v1_bottom[0], v1_bottom[1], 0.1],
+                [v2_bottom[0], v2_bottom[1], height], # v2 top
+                [v1_bottom[0], v1_bottom[1], height], # v1 top
+                center = poly_center
             )
 
         # finish mesh
@@ -99,8 +103,7 @@ def _create_stl(vertices: np.ndarray, height: float, filename: str):
 
         print(f"FINISHED FILE: {filename}\n")
 
-
-def _write_triangle(f, v0, v1, v2, normal=None):
+def _write_triangle(f, v0, v1, v2, center=None):
     """
     Writes a single triangle to a stl file.
 
@@ -108,17 +111,28 @@ def _write_triangle(f, v0, v1, v2, normal=None):
     ----------
 
     """
-    if normal is None:
-        # find normal
-        edge1 = np.array(v1) - np.array(v0)
-        edge2 = np.array(v2) - np.array(v0)
-        arr = np.cross(edge1, edge2)
-        norm = np.linalg.norm(arr)
-        if norm == 0:
-            normal = [0, 0, 0]
-        else:
-            normal = arr / norm
+    # find normal
+    edge1 = np.array(v1) - np.array(v0)
+    edge2 = np.array(v2) - np.array(v0)
+    arr = np.cross(edge1, edge2)
+    norm = np.linalg.norm(arr)
+    if norm == 0:
+        normal = [0, 0, 0]
+    else:
+        normal = arr / norm
 
+        if center is not None:
+            tri_center_x = (v0[0] + v1[0] + v2[0]) / 3
+            tri_center_y = (v0[1] + v1[1] + v2[1]) / 3
+
+            dist_to_center_x = tri_center_x - center[0]
+            dist_to_center_y = tri_center_y - center[1]
+
+            dot_product = dist_to_center_x * normal[0] + dist_to_center_y * normal[1]
+            
+            if dot_product < 0:
+                normal = -normal
+            
     # write in stl format 
     f.write(f"  facet normal {normal[0]} {normal[1]} {normal[2]}\n")
     f.write(f"      outer loop\n")
