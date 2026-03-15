@@ -1,11 +1,12 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable, LogInfo
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
+from path_planning import config
 import os
 
 def generate_launch_description():
@@ -68,20 +69,44 @@ def generate_launch_description():
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
-                FindPackageShare('turtlebot3_gazebo'),
+                FindPackageShare('gazebo_ros'),
                 'launch',
-                'turtlebot3_world.launch.py'
+                'gazebo.launch.py'
             ])
         ),
         launch_arguments={
-            'model' : model,
-            'world' : world_file
+            'world' : world_file,
+            'verbose' : 'true'
         }.items()
-
     )
 
-    # Add this to see what's being passed
-    from launch.actions import LogInfo
+    # Load robot description
+    robot_description = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            PathJoinSubstitution([
+                FindPackageShare('turtlebot3_gazebo'),
+                'launch',
+                'robot_state_publisher.launch.py'
+            ])
+        ]),
+        launch_arguments={'use_sim_time': 'true'}.items()
+    )
+
+    # Spawn the robot 
+    spawn_robot = Node(
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        arguments=[
+            '-entity', 'burger',
+            '-topic', 'robot_description',
+            '-x', f'{config.START[0]*config.WORLD_SCALE}',
+            '-y', f'{config.START[1]*config.WORLD_SCALE}',
+            '-z', '0.01'
+        ],
+        output='screen'
+    )
+    
+    # debug world file
     log_world = LogInfo(
         msg=['Loading world file: ', world_file]
     )
@@ -93,5 +118,7 @@ def generate_launch_description():
         set_turtlebot_model,
         log_world,
         gazebo,
+        robot_description,
+        spawn_robot,
         path_publisher_node
     ])
