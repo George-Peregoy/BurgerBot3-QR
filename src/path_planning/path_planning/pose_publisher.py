@@ -13,6 +13,12 @@ class PathPublisher(Node):
 
     def __init__(self):
         super().__init__('path_publisher_node')
+
+        # get env_file from launch 
+        self.declare_parameter('env_file', '')
+        self.env_file = self.get_parameter('env_file').value
+
+
         self.publisher_ = self.create_publisher(Path, 'path', 10)
         timer_period = 0.5 # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
@@ -39,15 +45,7 @@ class PathPublisher(Node):
         path : list
             List of points from RRT#.
         """
-        
-        # get env
-        share_dir = get_package_share_directory('path_planning')
-        
-        # HARDCODE FOR NOW FIX LATER
-        file_name = 'environment_polygon_0.pickle'
-        
-        env_dir  = os.path.join(share_dir, 'environments', file_name)
-        with open(env_dir, 'rb')as f:
+        with open(self.env_file, 'rb')as f:
             obstacles = pickle.load(f)
 
         obstacles = [np.array(poly) for poly in obstacles]
