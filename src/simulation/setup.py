@@ -15,7 +15,13 @@ setup(
         ('share/' + package_name, ['package.xml']),
 
         (os.path.join('share', package_name, 'launch'),
-         glob('launch/*.py'))
+         glob('launch/*.py')),
+       
+        (os.path.join('share', package_name, 'meshes'),
+         glob('meshes/*.stl')),
+
+        (os.path.join('share', package_name, 'worlds'),
+         glob('worlds/*.world')) 
     ],
     
     install_requires=[
