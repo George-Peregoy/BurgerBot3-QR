@@ -25,7 +25,7 @@ class PathPublisher(Node):
         self.i = 0
 
         path_points = self._get_path()
-        self.path_msg = self._list_to_path(path_points)
+        self.path_msg = self._path_to_poses(path_points)
 
     def timer_callback(self):
         self.publisher_.publish(self.path_msg)
@@ -64,7 +64,7 @@ class PathPublisher(Node):
         path, nodes, e = rrt.rrt_sharp()
         return path
 
-    def _list_to_path(self, path_points):
+    def _path_to_poses(self, path_points):
         """
         Converts path from RRT# to nav_msgs.msgs.Path
 
@@ -89,7 +89,7 @@ class PathPublisher(Node):
         # convert each point to PoseStamped
         for i in range(len(path_points)): 
             pose = PoseStamped()
-            pose.header.frame_id = 'map' # header ad stampe needed for msg
+            pose.header.frame_id = 'map' # header and stamp needed for msg
             pose.header.stamp = self.get_clock().now().to_msg()
 
             # assign position
