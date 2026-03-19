@@ -6,6 +6,15 @@ import pickle
 
 
 def main(num_worlds):
+    """
+    Steps
+    -----
+    1. Make environment using method from generate_obstacles.py
+    2. Dump environment into src/path_planning/environments
+    3. Convert 2D obstacles to 3D stl files
+    4. Add stl files to world file
+    5. Save world file to src/simulation/worlds
+    """
 
     num_obstacles = 8
     min_sides = 3
