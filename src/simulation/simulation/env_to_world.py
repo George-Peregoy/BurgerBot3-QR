@@ -39,6 +39,12 @@ def _create_stl(vertices: np.ndarray, height: float, filename: str):
 
     Parameters
     ----------
+    vertices : numpy.ndarray
+        Array of object vertices.
+    height : float
+        Height in meters obstacle will be extruded in z direction.
+    filename : str
+        Path to mesh file.
     """
     n = len(vertices)
 
@@ -103,13 +109,22 @@ def _create_stl(vertices: np.ndarray, height: float, filename: str):
 
         print(f"FINISHED FILE: {filename}\n")
 
-def _write_triangle(f, v0, v1, v2, center=None):
+def _write_triangle(f: str, v0: tuple, v1: tuple, v2: tuple, center=None):
     """
     Writes a single triangle to a stl file.
 
     Parameters
     ----------
-
+    f : str
+        Path to mesh file.
+    v0 : tuple
+        First vertice. Example (x, y, z).
+    v1 : tuple 
+        Second vertice. Example (x, y, z).
+    v2 : tuple
+        Third vertice. Example (x, y, z).
+    center : tuple
+        Center of triangle used in determining normal direction. Example (x, y, z).
     """
     # find normal
     edge1 = np.array(v1) - np.array(v0)
@@ -142,7 +157,19 @@ def _write_triangle(f, v0, v1, v2, center=None):
     f.write(f"      endloop\n")
     f.write(f"  endfacet\n")
 
-def _create_world(mesh_share_path, world_number, world_dir):
+def _create_world(mesh_share_path: str, world_number: int, world_dir: str):
+    """
+    Creates world file using stl of obstacles.
+
+    Parameters
+    ----------
+    mesh_share_path : str
+        Path to mesh dir.
+    world_number : int
+        World number matching environment number.
+    world_dir : str
+        Path to world dir.
+    """
     
     # make world file
     world_name = os.path.join(world_dir, f"world_{world_number}.world")
