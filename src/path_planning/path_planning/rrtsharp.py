@@ -421,6 +421,11 @@ class RRTSharp:
     def plot_path(self, path=None):
         """
         Plots path, obstacles, and ellipse if ellipse is not None.
+
+        Parameters
+        ----------
+        path : list
+            List of poses. default=None.
         """
         plt.figure(figsize=(8, 8))
         # Use self.nodes and self.path if not provided
