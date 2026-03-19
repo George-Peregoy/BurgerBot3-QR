@@ -104,7 +104,7 @@ class PathPublisher(Node):
                 theta = np.arctan2(dy, dx)
             else:
                 if i > 0:
-                    # if last point use orientation of previous point 
+                    # if last point, use orientation of previous point 
                     # doesn't matter where it's facing at end
                     dx = path_points[i][0] - path_points[i - 1][0]
                     dy = path_points[i][1] - path_points[i - 1][1]
