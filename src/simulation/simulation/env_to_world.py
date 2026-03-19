@@ -15,7 +15,7 @@ def env_to_world(world_number: int = 0):
     world_number : str
         World number which also corresponds to env number.
     """
-    base_dir = os.path.abspath(os.path.dirname(__file__))
+    base_dir = os.path.abspath(os.path.dirname(__file__)) # reads share dir 
     root_dir = os.path.join(base_dir, '..', '..', '..', '..', '..', '..')
     env_dir = os.path.join(root_dir, 'src','path_planning', 'environments', \
                            f"environment_polygon_{world_number}.pickle")
