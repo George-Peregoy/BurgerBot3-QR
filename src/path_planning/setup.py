@@ -23,7 +23,8 @@ setup(
         'numpy',
         'matplotlib',
         'imageio',
-        'shapely'
+        'shapely',
+        'qrcode'
         ],
     
     zip_safe=True,
