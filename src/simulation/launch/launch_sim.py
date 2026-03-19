@@ -7,7 +7,6 @@ from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
 from path_planning import config
-import os
 
 def generate_launch_description():
  
@@ -76,7 +75,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             'world' : world_file,
-            'verbose' : 'true'
+            'verbose' : 'false'
         }.items()
     )
 
