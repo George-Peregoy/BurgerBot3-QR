@@ -16,6 +16,9 @@ setup(
         
         (os.path.join('share', package_name, 'environments'),
          glob('environments/*pickle')),
+
+        (os.path.join('share', package_name, 'qrcodes'),
+         glob('qrcodes/*.png')),
     ],
     
     install_requires=[
