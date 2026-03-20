@@ -437,3 +437,14 @@ def decode_qr_string(qr_string, goal):
         ellipse = Ellipse2(f1, f2, s_val)
 
     return path, ellipse
+
+if __name__=="__main__":
+
+    qr_string = "45 45 0 46 34 49 12 2"
+    goal = (5, 5)
+
+    path, ellipse = decode_qr_string(qr_string, goal)
+    print(f"Path: {path}\n")
+    print(f"Ellipse f1: {ellipse.f1} | Ellipse f2:{ellipse.f2}\n")
+
+    
