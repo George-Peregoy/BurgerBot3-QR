@@ -7,4 +7,4 @@ L x W x H is 138mm x 178mm x 192 mm as per https://robotis.us/turtlebot-3-burger
 
 Start, goal, bounds, robot size, env to world factor are all located in src/path_planning/path_planning/config.py
 
-Make world number launch arg, fix env_to_world to accomadate as well as pose_publihser
+To fit in qr code, qr will be env points but path must be scaled for world
