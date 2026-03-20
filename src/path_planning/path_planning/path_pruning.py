@@ -261,7 +261,7 @@ def _greedy_ell(path, scores, char_limit=25):
         if f1_idx < 0 or f2_idx >= N or f1_idx >= f2_idx:
             return None
 
-        qr_len, _ = _check_qr_string_length(path, f1_idx, f2_idx, [], char_limit)
+        qr_len, _ = _check_qr_string_length(path, f1_idx, f2_idx, char_limit)
         if qr_len <= char_limit:
             break
 

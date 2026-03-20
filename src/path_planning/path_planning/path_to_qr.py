@@ -22,11 +22,9 @@ def path_to_qr(path: str, output_dir: str, env_number: int):
         border=4,
     )
     
-    compressed_data = zlib.compress(path.encode())
-
     try:
         # Add data to the QR code
-        qr.add_data(compressed_data)
+        qr.add_data(path)
         qr.make(fit=False)
 
         # Create an image of the QR code
@@ -35,10 +33,10 @@ def path_to_qr(path: str, output_dir: str, env_number: int):
         # Save the image
         output_path = os.path.join(output_dir, f"qr_code_{env_number}.png")
         img.save(output_path)
-        print(f"QR code generated and saved to {output_path}")
+        print(f"QR code generated and saved to {output_path}\n")
 
     except DataOverflowError:
-        print("Error: The data is too large to fit in a Version 1 QR code.")
+        print("Error: The data is too large to fit in a Version 1 QR code.\n")
 
 if __name__=="__main__":
     path_to_qr()

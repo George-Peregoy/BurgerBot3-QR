@@ -383,7 +383,7 @@ class RRTSharp:
             self.soln_time = float('inf')
         else:
             self.soln_time = t0 - start_time
-            print("Solution time:", self.soln_time)
+            print(f"Solution time: {self.soln_time}\n")
 
         # Finalize the best path found
         if self.best_goal:
@@ -412,7 +412,7 @@ class RRTSharp:
         if self.best_goal:
             node = self.best_goal
         else:
-            node = min(self.nodes, key=lambda n: self.euclidean_distance(n, self.goal))
+            node = min(self.nodes, key=lambda n: self._euclidean_distance(n, self.goal))
         while node is not None:
             path.append((node.x, node.y))
             node = node.parent
