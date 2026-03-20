@@ -1,31 +1,33 @@
 from path_planning import config
 from path_planning.rrtsharp import RRTSharp, error
+from path_planning.ellipses2 import Ellipse2
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
+from std_msgs.msg import String
 from ament_index_python.packages import get_package_share_directory
 import numpy as np
-import pickle
-import os
 
 class PathPublisher(Node):
 
     def __init__(self):
         super().__init__('path_publisher_node')
 
-        # get env_file from launch 
-        self.declare_parameter('env_file', '')
-        self.env_file = self.get_parameter('env_file').value
-
-
         self.publisher_ = self.create_publisher(Path, 'path', 10)
         timer_period = 0.5 # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
 
-        path_points = self._get_path()
-        self.path_msg = self._path_to_poses(path_points)
+        # get qr_data from qr_reader_node
+        self.subscription = self.create_subscription(
+            String,
+            'qr_data',
+            self.listener_callback,
+            10
+        )
+
+        self.qr_data = None
 
     def timer_callback(self):
         self.publisher_.publish(self.path_msg)
@@ -36,43 +38,86 @@ class PathPublisher(Node):
                 f'Publishing path: ({start.x:.2f}, {start.y:.2f}) -> ({goal.x:.2f}, {goal.y:.2f})'
             )
 
-    def _get_path(self):
+    def listener_callback(self, msg):
+
+        if self.qr_data is None:
+            self.get_logger().info(f"Reading QR data {msg.data}")
+            self.qr_data = msg.data
+            path_points, ellipse = self._get_path(msg.data) # convert to path
+            self.path_msg = self._path_to_poses(path_points) # convert to poses
+
+    def _get_path(self, qr_msg):
         """
-        Finds path using RRT#, converts to nav_msgs.msg.Path for publishing.
+        Converts String from qr to path.
+        
+        Parameters
+        ----------
+        qr_msg : str
+            QR data from qr_reader_node
 
         Returns
         -------
         path : list
-            List of points from RRT#.
+            List of points from QR code.
+        ellipse : Ellipse2
+            Ellipse data if present in QR.
+    
+        Notes
+        -----
+        Decode the QR payload created by _build_qr_for_indices:
+        - Triples (x,y,s) everywhere EXCEPT for a single f2 pair immediately after f1's triple
+            (unless f2 == goal, then that pair is omitted).
+        - Goal is never encoded; always appended.
+        - The string ends with either (x,y) or (x,y,s) but never a single x.
         """
-        with open(self.env_file, 'rb')as f:
-            obstacles = pickle.load(f)
+    
+        data = list(map(int, qr_msg.split()))
+        path = []
+        ellipse = None
+        f1 = f2 = None
+        s_val = None
 
-        obstacles = [np.array(poly) for poly in obstacles]
+        i = 0
+        while i < len(data):
+            # If we have at least a triple available, try to read (x,y,s)
+            if i + 2 < len(data):
+                x, y, s = data[i], data[i + 1], data[i + 2]
+                if s != 0 and ellipse is None:
+                    # This is f1
+                    f1 = (x, y)
+                    s_val = s
+                    path.append((x, y))
 
-        error_matrix = np.zeros((config.ENV_X_BOUNDS[1], config.ENV_Y_BOUNDS[1]))
-        e_env = 0.0
-        e = error(e_env, error_matrix)
+                    # Expect f2 pair immediately after f1 triple (if present)
+                    if i + 4 < len(data):
+                        f2 = (data[i + 3], data[i + 4])
+                        path.append(f2)
+                        i += 5  # consumed triple + pair
+                    else:
+                        # No pair after f1: f2 must be the known goal
+                        f2 = config.GOAL
+                        i += 3  # consumed triple
+                    continue
+                else:
+                    # Regular triple (x,y,0)
+                    path.append((x, y))
+                    i += 3
+                    continue
+            # If only 2 numbers remain, treat them as a plain (x,y) pair (e.g., f2 at end)
+            elif i + 1 < len(data):
+                path.append((data[i], data[i + 1]))
+                i += 2
+                continue
+            else:
+                break
 
-        rrt = RRTSharp(start = config.START, 
-                       goal = config.GOAL, 
-                       bounds = config.BOUNDS, 
-                       obstacles=obstacles,
-                       e = e,
-                       )
-        
-        path, nodes, e = rrt.rrt_sharp()
+        # Append the known goal at the end
+        path.append(config.GOAL)
 
-        """
-        Pruning uses 
-        prune_path(path, obstacles)
-        score_nodes(short_path, e, step_size)
-        greedy_ell(short_path, scores, char_limit)
-        _build_qr_for_indicies(short_path, params['f1_idx'], params['f2_idx'], params['s'], char_limit)
-        """
+        if f1 is not None and f2 is not None:
+            ellipse = Ellipse2(f1, f2, s_val)
 
-
-        return path
+        return path, ellipse
 
     def _path_to_poses(self, path_points):
         """
