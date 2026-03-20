@@ -27,7 +27,8 @@ setup(
         'matplotlib',
         'imageio',
         'shapely',
-        'qrcode'
+        'qrcode',
+        'pyzbar'
         ],
     
     zip_safe=True,
@@ -44,7 +45,8 @@ setup(
     
     entry_points={
         'console_scripts': [
-            'path_publisher = path_planning.pose_publisher:main'
+            'path_publisher = path_planning.pose_publisher_2:main',
+            'qr_reader_node = path_planning.qr_reader_node:main'
         ],
     },
 )
