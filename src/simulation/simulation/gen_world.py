@@ -1,6 +1,10 @@
 from simulation.env_to_world import env_to_world
 from path_planning.gen_obstacles import generate_obstacles
 from path_planning import config
+from path_planning.path_to_qr import path_to_qr
+from path_planning.rrtsharp import RRTSharp, error
+from path_planning.path_pruning import fit_to_qr
+import numpy as np
 import os
 import pickle
 
@@ -11,11 +15,14 @@ def main(num_worlds):
     -----
     1. Make environment using method from generate_obstacles.py
     2. Dump environment into src/path_planning/environments
-    3. Convert 2D obstacles to 3D stl files
-    4. Add stl files to world file
-    5. Save world file to src/simulation/worlds
+    3. Generate qr code for path
+    4. Save qr code to src/path_planning/qrcodes
+    5. Convert 2D obstacles to 3D stl files
+    6. Add stl files to world file
+    7. Save world file to src/simulation/worlds
     """
 
+    # set up params
     num_obstacles = 8
     min_sides = 3
     max_sides = 4
@@ -24,12 +31,15 @@ def main(num_worlds):
     max_area_ratio = 0.1
     max_side_length = 20
 
+    # set up dirs
     base_dir = os.path.abspath(os.path.dirname(__file__))
     root_dir = os.path.join(base_dir, '..', '..')
     env_dir = os.path.join(root_dir, 'path_planning', 'environments')
+    qr_dir = os.path.join(root_dir, 'path_planning', 'qrcodes')
 
     for i in range(num_worlds):
 
+        # make env
         file_name = os.path.join(env_dir, f'environment_polygon_{i}.pickle')
 
         obstacles = generate_obstacles(num_obstacles, min_sides, max_sides, \
@@ -38,6 +48,28 @@ def main(num_worlds):
         with open(file_name, 'wb') as f:
             pickle.dump(obstacles, f)
         
+        # simulate robot 1 
+        # gen path, encode
+        error_matrix = np.zeros((config.ENV_X_BOUNDS[1], config.ENV_Y_BOUNDS[1]))
+        e_env = 0.0
+        e = error(e_env, error_matrix)
+
+        rrt = RRTSharp(start = config.START, 
+                       goal = config.GOAL, 
+                       bounds = config.BOUNDS,
+                       step_size = config.STEP_SIZE, 
+                       obstacles=obstacles,
+                       e = e,
+                       )
+        
+        path, nodes, e = rrt.rrt_sharp()
+
+        path_str = fit_to_qr(path, obstacles, e, config.STEP_SIZE, config.CHAR_LIMIT)
+
+        # gen qr code
+        path_to_qr(path_str, qr_dir, i)
+
+        # make world
         env_to_world(i)
         
 if __name__=="__main__":
