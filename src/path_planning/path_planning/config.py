@@ -22,3 +22,6 @@ RADIUS_BUFFER = ROBOT_RADIUS * 0.1
 BUFFER = ROBOT_RADIUS + RADIUS_BUFFER # in meters
 
 WORLD_SCALE = 0.1 # world_units / env_units
+
+CHAR_LIMIT = 25 # for qr codes
+STEP_SIZE = 5 # used for consistency 
