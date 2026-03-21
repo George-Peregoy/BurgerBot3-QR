@@ -15,15 +15,17 @@ setup(
     zip_safe=True,
     maintainer='gperegoy',
     maintainer_email='georgeperegoyr@gmail.com',
-    description='TODO: Package description',
+    description='Controller package for TurtleBot3 BurgerBots',
     license='Apache-2.0',
     extras_require={
         'test': [
             'pytest',
+
         ],
     },
     entry_points={
         'console_scripts': [
+            'controller_node = controller.robot_controller:main'
         ],
     },
 )
