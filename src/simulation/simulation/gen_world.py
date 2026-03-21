@@ -37,7 +37,9 @@ def main(num_worlds):
     env_dir = os.path.join(root_dir, 'path_planning', 'environments')
     qr_dir = os.path.join(root_dir, 'path_planning', 'qrcodes')
 
-    for i in range(num_worlds):
+    i = 0
+    while i < num_worlds:
+        
 
         # make env
         file_name = os.path.join(env_dir, f'environment_polygon_{i}.pickle')
@@ -64,6 +66,11 @@ def main(num_worlds):
         
         path, nodes, e = rrt.rrt_sharp()
 
+        # make sure valid path
+        if len(path) < 3:
+            print(f"Path too short regenerating world {i}...\n")
+            continue
+
         path_str = fit_to_qr(path, obstacles, e, config.STEP_SIZE, config.CHAR_LIMIT)
 
         # gen qr code
@@ -71,7 +78,9 @@ def main(num_worlds):
 
         # make world
         env_to_world(i)
+
+        i += 1
         
 if __name__=="__main__":
-    num_worlds = 10
+    num_worlds = 5
     main(num_worlds=num_worlds)

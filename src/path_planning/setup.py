@@ -19,6 +19,7 @@ setup(
 
         (os.path.join('share', package_name, 'qrcodes'),
          glob('qrcodes/*.png')),
+         
     ],
     
     install_requires=[

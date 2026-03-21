@@ -64,6 +64,12 @@ def generate_launch_description():
         }]
     )
 
+    # controller node
+    controller_node = Node(
+        package = 'controller',
+        executable = 'controller_node'
+    )
+
     # resolve args
     model = LaunchConfiguration('model')
 
@@ -88,37 +94,27 @@ def generate_launch_description():
         }.items()
     )
 
-    # Load robot description
-    robot_description = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
-            PathJoinSubstitution([
-                FindPackageShare('turtlebot3_gazebo'),
-                'launch',
-                'robot_state_publisher.launch.py'
-            ])
-        ]),
-        launch_arguments={'use_sim_time': 'true'}.items()
-    )
-
-    # Spawn the robot 
-    spawn_robot = Node(
-        package='gazebo_ros',
-        executable='spawn_entity.py',
-        arguments=[
-            '-entity', 'burger',
-            '-topic', 'robot_description',
-            '-x', f'{config.START[0]*config.WORLD_SCALE}',
-            '-y', f'{config.START[1]*config.WORLD_SCALE}',
-            '-z', '0.01'
-        ],
-        output='screen'
-    )
-    
     # debug world file
     log_world = LogInfo(
         msg=['Loading world file: ', world_file]
     )
-    
+
+    # spawn bot
+    spawn_turtlebot = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            PathJoinSubstitution([
+                FindPackageShare('turtlebot3_gazebo'),
+                'launch',
+                'spawn_turtlebot3.launch.py'
+            ])
+        ]),
+        launch_arguments={
+            'x_pose': f'{config.GOAL[0]*config.WORLD_SCALE}',  # Robot 2 start position
+            'y_pose': f'{config.GOAL[1]*config.WORLD_SCALE}',
+            'z_pose': '0.01'
+        }.items()
+    )
+
     return LaunchDescription([
         set_model_path,
         model_arg,
@@ -126,8 +122,8 @@ def generate_launch_description():
         set_turtlebot_model,
         log_world,
         gazebo,
-        robot_description,
-        spawn_robot,
+        spawn_turtlebot, 
         qr_reader_node,
-        path_publisher_node
+        path_publisher_node,
+        controller_node
     ])
