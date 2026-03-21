@@ -7,7 +7,9 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from std_msgs.msg import String
 from ament_index_python.packages import get_package_share_directory
+from shapely import Polygon
 import numpy as np
+import pickle
 
 class PathPublisher(Node):
 
@@ -28,22 +30,33 @@ class PathPublisher(Node):
         )
 
         self.qr_data = None
+        self.path_msg = None
+
+        # get env_file from launch - used if ellipse 
+        self.declare_parameter('env_file', '')
+        self.env_file = self.get_parameter('env_file').value
 
     def timer_callback(self):
+        if self.path_msg is None:
+            return
+        
         self.publisher_.publish(self.path_msg)
         if len(self.path_msg.poses) > 0:
-            start = self.path_msg.poses[0].pose.position
-            goal = self.path_msg.poses[-1].pose.position
-            self.get_logger().info(
-                f'Publishing path: ({start.x:.2f}, {start.y:.2f}) -> ({goal.x:.2f}, {goal.y:.2f})'
+            if self.i == 0:
+                self.i += 1
+                start = self.path_msg.poses[0].pose.position
+                goal = self.path_msg.poses[-1].pose.position
+                self.get_logger().info(
+                    f'Publishing path: ({start.x:.2f}, {start.y:.2f}) -> ({goal.x:.2f}, {goal.y:.2f})\n'
             )
 
     def listener_callback(self, msg):
 
         if self.qr_data is None:
-            self.get_logger().info(f"Reading QR data {msg.data}")
+            self.get_logger().info(f"Reading QR data {msg.data}\n")
             self.qr_data = msg.data
             path_points, ellipse = self._get_path(msg.data) # convert to path
+            path_points = path_points[::-1] # flip message, robot 1 goal is robot 2 start
             self.path_msg = self._path_to_poses(path_points) # convert to poses
 
     def _get_path(self, qr_msg):
@@ -116,6 +129,39 @@ class PathPublisher(Node):
 
         if f1 is not None and f2 is not None:
             ellipse = Ellipse2(f1, f2, s_val)
+
+        # patch together ellipse
+        if ellipse is not None:
+            self.get_logger().info(f"Ellipse detected: f1={f1}, f2={f2}")
+           
+            with open(self.env_file, 'rb') as f:
+                obstacles = pickle.load(f)
+
+            self.get_logger().info(f"Reading env file: {self.env_file}\n")
+            obstacles = [Polygon(np.array(poly)) for poly in obstacles]
+
+            error_matrix = [[0 for _ in range(50)] for _ in range(max(config.ENV_X_BOUNDS))]
+            e_env = 0.0
+            e = error(e_env, error_matrix)
+
+            # use RRT# to get path from f1 to f2
+            self.get_logger().info(f"Running RRT# in ellipse")
+            rrt = RRTSharp(
+                start = f1,
+                goal = f2,
+                bounds = config.BOUNDS,
+                step_size = 2,
+                obstacles = obstacles,
+                e=e,
+                ellipse = ellipse
+            )
+
+            ell_path, nodes, e = rrt.rrt_sharp()
+
+            f1_idx = path.index(f1)
+            f2_idx = path.index(f2)
+
+            path = path[:f1_idx + 1] + ell_path[1:-1] + path[f2_idx:]
 
         return path, ellipse
 
