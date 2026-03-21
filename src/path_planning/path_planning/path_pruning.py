@@ -1,4 +1,5 @@
 import numpy as np
+from path_planning import config
 from shapely.geometry import Polygon, LineString
 from path_planning.ellipses2 import Ellipse2
 from path_planning.rrtsharp import error
@@ -330,6 +331,7 @@ def fit_to_qr(path: list, obstacles: list, e, step_size, char_limit: int=25):
     """
     # make sure Polygon for collison detection
     obstacles = [Polygon(obstacle) for obstacle in obstacles]
+    buffer_obstacles = [obstacle.buffer(config.BUFFER/config.WORLD_SCALE) for obstacle in obstacles]
     
     # make sure int to fit in qr
     path = [tuple(round(x) for x in t) for t in path]
@@ -337,7 +339,7 @@ def fit_to_qr(path: list, obstacles: list, e, step_size, char_limit: int=25):
 
     # Initial encoding
     print(f"orignal path: {path}\n")
-    line_of_sight_path = _prune_path(path, obstacles)
+    line_of_sight_path = _prune_path(path, buffer_obstacles)
     print(f"Line of sight path: {line_of_sight_path}\n")
     path_scores = _score_nodes(path, e, step_size)
 
