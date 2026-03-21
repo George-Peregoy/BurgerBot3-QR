@@ -64,9 +64,9 @@ def _create_stl(vertices: np.ndarray, height: float, filename: str):
             v2 = vertices[i]
             _write_triangle(
                 f, 
-                [v0[0], v0[1], 0.1], # conver to 3D point
-                [v1[0], v1[1], 0.1], 
-                [v2[0], v2[1], 0.1], 
+                [v0[0], v0[1], 0.01], # conver to 3D point
+                [v1[0], v1[1], 0.01], 
+                [v2[0], v2[1], 0.01], 
                 center=poly_center # faces down 
             )
 
@@ -90,15 +90,15 @@ def _create_stl(vertices: np.ndarray, height: float, filename: str):
             
             _write_triangle(
                 f,
-                [v1_bottom[0], v1_bottom[1], 0.1],
-                [v2_bottom[0], v2_bottom[1], 0.1],
+                [v1_bottom[0], v1_bottom[1], 0.01],
+                [v2_bottom[0], v2_bottom[1], 0.01],
                 [v2_bottom[0], v2_bottom[1], height], # v2 top
                 center = poly_center
             )
 
             _write_triangle(
                 f,
-                [v1_bottom[0], v1_bottom[1], 0.1],
+                [v1_bottom[0], v1_bottom[1], 0.01],
                 [v2_bottom[0], v2_bottom[1], height], # v2 top
                 [v1_bottom[0], v1_bottom[1], height], # v1 top
                 center = poly_center
