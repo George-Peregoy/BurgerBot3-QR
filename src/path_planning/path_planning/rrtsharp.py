@@ -253,11 +253,11 @@ class RRTSharp:
         """
         if self.ellipse is not None:
             # Sample from the ellipse using samp_ellipse
-            x, y = samp_ellipse(self.ellipse, 1)
+            x, y = samp_ellipse(self.ellipse, 1)[0] # returns list so grab first item
             return Node(x, y)
         else:
             # Uniform random sample in [0, 50] x [0, 50]
-            return Node(random.uniform(self.x_min, self.x_max), random.uniform(self.y_min, self.y_max))
+            return Node(round(random.uniform(self.x_min, self.x_max)), round(random.uniform(self.y_min, self.y_max)))
 
     def rrt_sharp(self):
         """
@@ -694,8 +694,6 @@ class RRTSharp:
             pickle.dump(rrt_data, f)
         print(f"RRT# data saved to {data_path}")
     
-    
-
 def main():
     
     # --- CONFIGURATION ---
@@ -728,7 +726,6 @@ def main():
     # rrt.rrt_sharp_animate(env_path=ENV_PATH, save_dir='./animations/', gif_name=f'rrtsharp_env{ENV_NUM}.gif', data_name=f'rrt_data_env{ENV_NUM}.pickle')
     path, nodes, e = rrt.rrt_sharp()
     rrt.plot_path(path)
-
 
 # Usage in __main__:
 if __name__ == "__main__":
