@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-from path_planning.path_pruning import decode_qr_string
 from std_msgs.msg import String
 from pyzbar.pyzbar import decode
 from PIL import Image
