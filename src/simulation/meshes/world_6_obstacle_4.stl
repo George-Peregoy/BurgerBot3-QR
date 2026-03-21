@@ -1,58 +1,86 @@
 solid obstacle
-  facet normal -0.0 0.0 -1.0
+  facet normal 0.0 0.0 -1.0
       outer loop
-          vertex 1.5 3.7 0.1
-          vertex 0.7000000000000001 3.3000000000000003 0.1
-          vertex 0.0 4.1000000000000005 0.1
+          vertex 3.0 1.8 0.01
+          vertex 3.5 2.9000000000000004 0.01
+          vertex 3.8000000000000003 1.6 0.01
+      endloop
+  endfacet
+  facet normal 0.0 0.0 -1.0
+      outer loop
+          vertex 3.0 1.8 0.01
+          vertex 3.4000000000000004 3.1 0.01
+          vertex 3.5 2.9000000000000004 0.01
+      endloop
+  endfacet
+  facet normal -0.0 0.0 1.0
+      outer loop
+          vertex 3.0 1.8 1
+          vertex 3.8000000000000003 1.6 1
+          vertex 3.5 2.9000000000000004 1
       endloop
   endfacet
   facet normal 0.0 0.0 1.0
       outer loop
-          vertex 1.5 3.7 1
-          vertex 0.0 4.1000000000000005 1
-          vertex 0.7000000000000001 3.3000000000000003 1
+          vertex 3.0 1.8 1
+          vertex 3.5 2.9000000000000004 1
+          vertex 3.4000000000000004 3.1 1
       endloop
   endfacet
-  facet normal 0.25766265056033255 0.9662349396012463 0.0
+  facet normal -0.24253562503633286 -0.970142500145332 0.0
       outer loop
-          vertex 1.5 3.7 0.1
-          vertex 0.0 4.1000000000000005 0.1
-          vertex 0.0 4.1000000000000005 1
+          vertex 3.0 1.8 0.01
+          vertex 3.8000000000000003 1.6 0.01
+          vertex 3.8000000000000003 1.6 1
       endloop
   endfacet
-  facet normal 0.25766265056033255 0.9662349396012463 -0.0
+  facet normal -0.24253562503633286 -0.970142500145332 0.0
       outer loop
-          vertex 1.5 3.7 0.1
-          vertex 0.0 4.1000000000000005 1
-          vertex 1.5 3.7 1
+          vertex 3.0 1.8 0.01
+          vertex 3.8000000000000003 1.6 1
+          vertex 3.0 1.8 1
       endloop
   endfacet
-  facet normal -0.7525766947068779 -0.6585046078685179 0.0
+  facet normal 0.9743911956946197 0.2248595066987586 0.0
       outer loop
-          vertex 0.0 4.1000000000000005 0.1
-          vertex 0.7000000000000001 3.3000000000000003 0.1
-          vertex 0.7000000000000001 3.3000000000000003 1
+          vertex 3.8000000000000003 1.6 0.01
+          vertex 3.5 2.9000000000000004 0.01
+          vertex 3.5 2.9000000000000004 1
       endloop
   endfacet
-  facet normal -0.7525766947068779 -0.6585046078685179 0.0
+  facet normal 0.9743911956946197 0.2248595066987586 -0.0
       outer loop
-          vertex 0.0 4.1000000000000005 0.1
-          vertex 0.7000000000000001 3.3000000000000003 1
-          vertex 0.0 4.1000000000000005 1
+          vertex 3.8000000000000003 1.6 0.01
+          vertex 3.5 2.9000000000000004 1
+          vertex 3.8000000000000003 1.6 1
       endloop
   endfacet
-  facet normal 0.44721359549995787 -0.8944271909999159 0.0
+  facet normal 0.8944271909999163 0.44721359549995715 0.0
       outer loop
-          vertex 0.7000000000000001 3.3000000000000003 0.1
-          vertex 1.5 3.7 0.1
-          vertex 1.5 3.7 1
+          vertex 3.5 2.9000000000000004 0.01
+          vertex 3.4000000000000004 3.1 0.01
+          vertex 3.4000000000000004 3.1 1
       endloop
   endfacet
-  facet normal 0.44721359549995787 -0.8944271909999159 0.0
+  facet normal 0.8944271909999163 0.44721359549995715 -0.0
       outer loop
-          vertex 0.7000000000000001 3.3000000000000003 0.1
-          vertex 1.5 3.7 1
-          vertex 0.7000000000000001 3.3000000000000003 1
+          vertex 3.5 2.9000000000000004 0.01
+          vertex 3.4000000000000004 3.1 1
+          vertex 3.5 2.9000000000000004 1
+      endloop
+  endfacet
+  facet normal -0.95577900872195 0.29408584883752337 0.0
+      outer loop
+          vertex 3.4000000000000004 3.1 0.01
+          vertex 3.0 1.8 0.01
+          vertex 3.0 1.8 1
+      endloop
+  endfacet
+  facet normal -0.95577900872195 0.29408584883752337 0.0
+      outer loop
+          vertex 3.4000000000000004 3.1 0.01
+          vertex 3.0 1.8 1
+          vertex 3.4000000000000004 3.1 1
       endloop
   endfacet
 endsolid obstacle
