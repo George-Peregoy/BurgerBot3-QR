@@ -49,7 +49,7 @@ def generate_launch_description():
 
     path_publisher_node = Node(
         package = 'path_planning',
-        executable = 'path_publisher',
+        executable = 'path_publisher_2',
         parameters = [{
             'env_file': env_file
         }]
@@ -111,7 +111,8 @@ def generate_launch_description():
         launch_arguments={
             'x_pose': f'{config.GOAL[0]*config.WORLD_SCALE}',  # Robot 2 start position
             'y_pose': f'{config.GOAL[1]*config.WORLD_SCALE}',
-            'z_pose': '0.01'
+            'z_pose': '0.01',
+            'robot_name': 'robot_2'
         }.items()
     )
 
