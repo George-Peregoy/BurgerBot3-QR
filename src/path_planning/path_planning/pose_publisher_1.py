@@ -1,11 +1,13 @@
 from path_planning import config
 from path_planning.rrtsharp import RRTSharp, error
-from greedy_ell import prune_path
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
-from ament_index_python.packages import get_package_share_directory
+from  std_msgs.msg import Bool
+from path_planning.path_to_qr import path_to_qr
+from path_planning.path_pruning import fit_to_qr
+from shapely import Polygon
 import numpy as np
 import pickle
 import os
@@ -19,18 +21,29 @@ class PathPublisher(Node):
         self.declare_parameter('env_file', '')
         self.env_file = self.get_parameter('env_file').value
 
+        self.declare_parameter('qr_num', -1)
+        self.qr_num = self.get_parameter('qr_num').value
 
         self.publisher_ = self.create_publisher(Path, 'path', 10)
         timer_period = 0.5 # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
 
-        path_points = self._get_path()
-        self.path_msg = self._path_to_poses(path_points)
+        self.path_points = self._get_path()
+        self.path_msg = self._path_to_poses(self.path_points)
+
+        # subscribe to at_goal and then generate qr
+        self.at_goal_sub = self.create_subscription(
+            Bool,
+            '/at_goal',
+            self.goal_callback,
+            10
+        )
 
     def timer_callback(self):
         self.publisher_.publish(self.path_msg)
-        if len(self.path_msg.poses) > 0:
+        if self.i == 0:
+            self.i+= 1
             start = self.path_msg.poses[0].pose.position
             goal = self.path_msg.poses[-1].pose.position
             self.get_logger().info(
@@ -49,7 +62,7 @@ class PathPublisher(Node):
         with open(self.env_file, 'rb')as f:
             obstacles = pickle.load(f)
 
-        obstacles = [np.array(poly) for poly in obstacles]
+        self.obstacles = [Polygon(np.array(poly)) for poly in obstacles]
 
         error_matrix = np.zeros((config.ENV_X_BOUNDS[1], config.ENV_Y_BOUNDS[1]))
         e_env = 0.0
@@ -58,21 +71,11 @@ class PathPublisher(Node):
         rrt = RRTSharp(start = config.START, 
                        goal = config.GOAL, 
                        bounds = config.BOUNDS, 
-                       obstacles=obstacles,
+                       obstacles=self.obstacles,
                        e = e,
                        )
         
-        path, nodes, e = rrt.rrt_sharp()
-
-        """
-        Pruning uses 
-        prune_path(path, obstacles)
-        score_nodes(short_path, e, step_size)
-        greedy_ell(short_path, scores, char_limit)
-        _build_qr_for_indicies(short_path, params['f1_idx'], params['f2_idx'], params['s'], char_limit)
-        """
-
-
+        path, nodes, self.e = rrt.rrt_sharp()
         return path
 
     def _path_to_poses(self, path_points):
@@ -152,6 +155,24 @@ class PathPublisher(Node):
             np.sin(yaw / 2.0),
             np.cos(yaw / 2.0)
         )
+
+    def goal_callback(self, at_goal_msg):
+
+        if at_goal_msg.data == True:
+
+            path_str = fit_to_qr(path=self.path_points, 
+                                obstacles=self.obstacles, 
+                                e=self.e,
+                                step_size=config.STEP_SIZE,
+                                char_limit=config.CHAR_LIMIT)
+            
+            self.get_logger().info(f"Saving path as {path_str}\n")
+            
+            base_dir = os.path.abspath(os.path.dirname(__file__)) # reads share dir 
+            root_dir = os.path.join(base_dir, '..', '..', '..', '..', '..', '..')
+            qr_dir = os.path.join(root_dir, 'src', 'path_planning', 'qrcodes')
+            
+            path_to_qr(path=path_str, output_dir=qr_dir, env_number=self.qr_num)
 
 def main(args=None):
     rclpy.init(args=args)
