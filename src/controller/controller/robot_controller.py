@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Path, Odometry
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Bool
 import numpy as np
 
 class RobotController(Node):
@@ -24,6 +25,9 @@ class RobotController(Node):
             self.odom_callback,
             10
         )
+
+        # publish if at goal
+        self.at_goal_publisher = self.create_publisher(Bool, '/at_goal', 10)
 
         self.path = None
         self.odom = None
@@ -107,6 +111,9 @@ class RobotController(Node):
                 self.at_goal = True
                 vel_msg = Twist() # stop moving
                 self.get_logger().info("GOAL REACHED")
+                at_goal_msg = Bool()
+                at_goal_msg.data = True
+                self.at_goal_publisher.publish(at_goal_msg)
                 return
  
         self.publisher_.publish(vel_msg)
