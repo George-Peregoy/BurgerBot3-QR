@@ -46,8 +46,9 @@ setup(
     
     entry_points={
         'console_scripts': [
-            'path_publisher = path_planning.pose_publisher_2:main',
-            'qr_reader_node = path_planning.qr_reader_node:main'
+            'path_publisher_2 = path_planning.pose_publisher_2:main',
+            'qr_reader_node = path_planning.qr_reader_node:main',
+            'path_publisher_1 = path_planning.pose_publisher_1:main',
         ],
     },
 )
