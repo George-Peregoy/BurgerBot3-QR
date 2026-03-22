@@ -1,9 +1,7 @@
 from simulation.env_to_world import env_to_world
 from path_planning.gen_obstacles import generate_obstacles
 from path_planning import config
-from path_planning.path_to_qr import path_to_qr
 from path_planning.rrtsharp import RRTSharp, error
-from path_planning.path_pruning import fit_to_qr
 import numpy as np
 import os
 import pickle
@@ -35,12 +33,10 @@ def main(num_worlds):
     base_dir = os.path.abspath(os.path.dirname(__file__))
     root_dir = os.path.join(base_dir, '..', '..')
     env_dir = os.path.join(root_dir, 'path_planning', 'environments')
-    qr_dir = os.path.join(root_dir, 'path_planning', 'qrcodes')
 
     i = 0
     while i < num_worlds:
         
-
         # make env
         file_name = os.path.join(env_dir, f'environment_polygon_{i}.pickle')
 
@@ -70,11 +66,6 @@ def main(num_worlds):
         if len(path) < 3:
             print(f"Path too short regenerating world {i}...\n")
             continue
-
-        path_str = fit_to_qr(path, obstacles, e, config.STEP_SIZE, config.CHAR_LIMIT)
-
-        # gen qr code
-        path_to_qr(path_str, qr_dir, i)
 
         # make world
         env_to_world(i)
