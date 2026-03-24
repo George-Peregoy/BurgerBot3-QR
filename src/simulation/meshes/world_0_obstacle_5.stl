@@ -1,58 +1,86 @@
 solid obstacle
   facet normal 0.0 0.0 -1.0
       outer loop
-          vertex 3.8000000000000003 3.4000000000000004 0.01
-          vertex 3.5 2.6 0.01
-          vertex 2.8000000000000003 3.1 0.01
+          vertex 0.30000000000000004 3.3000000000000003 0.01
+          vertex 2.5 4.0 0.01
+          vertex 2.2 2.9000000000000004 0.01
+      endloop
+  endfacet
+  facet normal 0.0 0.0 -1.0
+      outer loop
+          vertex 0.30000000000000004 3.3000000000000003 0.01
+          vertex 1.5 3.7 0.01
+          vertex 2.5 4.0 0.01
+      endloop
+  endfacet
+  facet normal -0.0 0.0 1.0
+      outer loop
+          vertex 0.30000000000000004 3.3000000000000003 1
+          vertex 2.2 2.9000000000000004 1
+          vertex 2.5 4.0 1
       endloop
   endfacet
   facet normal 0.0 0.0 1.0
       outer loop
-          vertex 3.8000000000000003 3.4000000000000004 1
-          vertex 2.8000000000000003 3.1 1
-          vertex 3.5 2.6 1
+          vertex 0.30000000000000004 3.3000000000000003 1
+          vertex 2.5 4.0 1
+          vertex 1.5 3.7 1
       endloop
   endfacet
-  facet normal -0.28734788556634566 0.9578262852211513 0.0
+  facet normal -0.20601048104984185 -0.978549784986749 0.0
       outer loop
-          vertex 3.8000000000000003 3.4000000000000004 0.01
-          vertex 2.8000000000000003 3.1 0.01
-          vertex 2.8000000000000003 3.1 1
+          vertex 0.30000000000000004 3.3000000000000003 0.01
+          vertex 2.2 2.9000000000000004 0.01
+          vertex 2.2 2.9000000000000004 1
       endloop
   endfacet
-  facet normal -0.28734788556634566 0.9578262852211513 0.0
+  facet normal -0.20601048104984185 -0.978549784986749 0.0
       outer loop
-          vertex 3.8000000000000003 3.4000000000000004 0.01
-          vertex 2.8000000000000003 3.1 1
-          vertex 3.8000000000000003 3.4000000000000004 1
+          vertex 0.30000000000000004 3.3000000000000003 0.01
+          vertex 2.2 2.9000000000000004 1
+          vertex 0.30000000000000004 3.3000000000000003 1
       endloop
   endfacet
-  facet normal -0.5812381937190966 -0.8137334712067349 0.0
+  facet normal 0.9647638212377321 -0.2631174057921086 0.0
       outer loop
-          vertex 2.8000000000000003 3.1 0.01
-          vertex 3.5 2.6 0.01
-          vertex 3.5 2.6 1
+          vertex 2.2 2.9000000000000004 0.01
+          vertex 2.5 4.0 0.01
+          vertex 2.5 4.0 1
       endloop
   endfacet
-  facet normal -0.5812381937190966 -0.8137334712067349 0.0
+  facet normal 0.9647638212377321 -0.2631174057921086 0.0
       outer loop
-          vertex 2.8000000000000003 3.1 0.01
-          vertex 3.5 2.6 1
-          vertex 2.8000000000000003 3.1 1
+          vertex 2.2 2.9000000000000004 0.01
+          vertex 2.5 4.0 1
+          vertex 2.2 2.9000000000000004 1
       endloop
   endfacet
-  facet normal 0.9363291775690444 -0.35112344158839187 0.0
+  facet normal -0.2873478855663453 0.9578262852211514 0.0
       outer loop
-          vertex 3.5 2.6 0.01
-          vertex 3.8000000000000003 3.4000000000000004 0.01
-          vertex 3.8000000000000003 3.4000000000000004 1
+          vertex 2.5 4.0 0.01
+          vertex 1.5 3.7 0.01
+          vertex 1.5 3.7 1
       endloop
   endfacet
-  facet normal 0.9363291775690444 -0.35112344158839187 0.0
+  facet normal -0.2873478855663453 0.9578262852211514 0.0
       outer loop
-          vertex 3.5 2.6 0.01
-          vertex 3.8000000000000003 3.4000000000000004 1
-          vertex 3.5 2.6 1
+          vertex 2.5 4.0 0.01
+          vertex 1.5 3.7 1
+          vertex 2.5 4.0 1
+      endloop
+  endfacet
+  facet normal -0.3162277660168379 0.9486832980505139 0.0
+      outer loop
+          vertex 1.5 3.7 0.01
+          vertex 0.30000000000000004 3.3000000000000003 0.01
+          vertex 0.30000000000000004 3.3000000000000003 1
+      endloop
+  endfacet
+  facet normal -0.3162277660168379 0.9486832980505139 0.0
+      outer loop
+          vertex 1.5 3.7 0.01
+          vertex 0.30000000000000004 3.3000000000000003 1
+          vertex 1.5 3.7 1
       endloop
   endfacet
 endsolid obstacle
