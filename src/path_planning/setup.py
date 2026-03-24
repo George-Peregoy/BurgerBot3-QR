@@ -29,7 +29,8 @@ setup(
         'imageio',
         'shapely',
         'qrcode',
-        'pyzbar'
+        'pyzbar',
+        'pillow'
         ],
     
     zip_safe=True,
