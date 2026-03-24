@@ -45,7 +45,7 @@ pip install -r requirements.txt
 - shapely==2.1.2
 - imageio==2.37.2
 - qrcode==8.2
-- pyzba==0.1.9
+- pyzbar==0.1.9
 - pillow==9.0.1
 
 ### 4. Build the Workspace
@@ -61,6 +61,7 @@ The workspace is split into three packages. Path planning is used to read and sa
 
 ### path_planning
 
+```bash
 .
 ├── environments/
 ├── LICENSE
@@ -84,24 +85,26 @@ The workspace is split into three packages. Path planning is used to read and sa
 ├── setup.cfg
 ├── setup.py
 └── test/
+```
 
 **Nodes:**
 
 - `pose_publisher_1.py` - Uses RRT# to navigate environment, publishes /path as nav_msgs/msg/Path, saves qr code to src/path_planning/qrcodes/.
-- `pose_publisher_2.py` - Subscribes to /qr_data, converts data to nav_msgs/msg/Path, publishes //path.
+- `pose_publisher_2.py` - Subscribes to /qr_data, converts data to nav_msgs/msg/Path, publishes /path.
 - `qr_reader_node.py` - Reads QR code, publishes path as string.
 
 **Utlilities:**
 
 - `ellipses2.py` - Defines ellipse object, handles ellipse sampling.
-- `gen_obstacles` - Generates 2D environment, saves to src/path_planning/environments.
-- `path_pruning` - Prunes path by line of sight, then if needed prunes using ellipse.
-- `path_to_qr` - Converts a list of points to a string to be saved as a Qr code.
-- `rrtsharp` - Handles RRT# path planning.
+- `gen_obstacles.py` - Generates 2D environment, saves to src/path_planning/environments.
+- `path_pruning.py` - Prunes path by line of sight, then if needed prunes using ellipse.
+- `path_to_qr.py` - Converts a list of points to a string to be saved as a Qr code.
+- `rrtsharp.py` - Handles RRT# path planning.
 
 
 ### controller
 
+```bash
 .
 ├── controller
 │   ├── __init__.py
@@ -112,6 +115,7 @@ The workspace is split into three packages. Path planning is used to read and sa
 ├── setup.cfg
 ├── setup.py
 └── test/
+```
 
 **Nodes:**
 
@@ -119,6 +123,7 @@ The workspace is split into three packages. Path planning is used to read and sa
 
 ### simulation
 
+```bash
 .
 ├── build/
 ├── install/
@@ -138,6 +143,7 @@ The workspace is split into three packages. Path planning is used to read and sa
 │   └── __init__.py
 ├── test/
 └── worlds/
+```
 
 **Launch Files:**
 
@@ -146,7 +152,7 @@ The workspace is split into three packages. Path planning is used to read and sa
 
 **Utilities:**
 
-- `env_to_world.py` - Converts 2D obstalces into mesh files, combines mesh files into a single world file. Saves meshes to src/simulation/meshes/ Saves worlds to src/simulation/worlds
+- `env_to_world.py` - Converts 2D obstalces into mesh files, combines mesh files into a single world file. Saves meshes to src/simulation/meshes/. Saves worlds to src/simulation/worlds.
 - `gen_world.py` - Generates random obstacles for 2D environment, converts 2D obstacles to world file for 3D simulation.
 
 ## Configuration
