@@ -119,7 +119,7 @@ The workspace is split into three packages. Path planning is used to read and sa
 
 **Nodes:**
 
-- `robot_controller.py` - Subscribes to \path, finds publishes desired linear and angular velocity as type geometry_msgs/msg/Twist to topic /cmd_vel.
+- `robot_controller.py` - Subscribes to /path, finds publishes desired linear and angular velocity as type geometry_msgs/msg/Twist to topic /cmd_vel.
 
 ### simulation
 
@@ -171,7 +171,7 @@ Key global variables in src/path_planning/config.py
 
 ## Usage
 
-To generate worlds run `python3 src/simulation/gen_world.py`.
+To generate worlds run `python3 src/simulation/simulation/gen_world.py`.
 It is set to generate five random worlds. After running this you must use `colcon build` to save the worlds to the workspace.
 
 To launch robot 1 run `ros2 launch simulation launch_robot_1.py world_num:=0`. Note that the world_num argument is optional and defaults to 0.
