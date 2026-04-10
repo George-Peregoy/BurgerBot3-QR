@@ -21,8 +21,8 @@ class PathPublisher(Node):
         self.declare_parameter('env_file', '')
         self.env_file = self.get_parameter('env_file').value
 
-        self.declare_parameter('qr_num', -1)
-        self.qr_num = self.get_parameter('qr_num').value
+        self.declare_parameter('world_num', -1)
+        self.world_num = self.get_parameter('world_num').value
 
         self.publisher_ = self.create_publisher(Path, 'path', 10)
         timer_period = 0.5 # seconds

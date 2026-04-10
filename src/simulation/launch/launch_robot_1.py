@@ -52,7 +52,7 @@ def generate_launch_description():
         executable = 'path_publisher_1',
         parameters = [{
             'env_file': env_file,
-            'qr_num' : world_num
+            'world_num' : world_num
         }]
     )
 
