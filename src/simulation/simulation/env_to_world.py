@@ -31,6 +31,7 @@ def env_to_world(world_number: int = 0):
         mesh_path = os.path.join(mesh_dir, mesh_name)
         _create_stl(vertices=obstacle, height=1, filename=mesh_path)
 
+    add_boundary_walls(mesh_dir, world_number)
     _create_world(mesh_dir, world_number, world_dir)
 
 def _create_stl(vertices: np.ndarray, height: float, filename: str):
@@ -235,6 +236,30 @@ def _create_world(mesh_share_path: str, world_number: int, world_dir: str):
         # end world file        
         f.write('   </world>\n')
         f.write('</sdf>')
+
+def add_boundary_walls(mesh_dir, world_number: int):
+    """
+    Adds boundary walls along env edges to world file.
+    """
+    
+    # env bounds in world scale
+    x_min = config.ENV_X_BOUNDS[0] * config.WORLD_SCALE
+    x_max = config.ENV_X_BOUNDS[1] * config.WORLD_SCALE
+    y_min = config.ENV_Y_BOUNDS[0] * config.WORLD_SCALE
+    y_max = config.ENV_Y_BOUNDS[1] * config.WORLD_SCALE
+    t = 0.1  # wall thickness in meters
+
+    walls = {
+        'bottom': [[x_min, y_min], [x_max, y_min], [x_max, y_min + t], [x_min, y_min + t]],
+        'top':    [[x_min, y_max - t], [x_max, y_max - t], [x_max, y_max], [x_min, y_max]],
+        'left':   [[x_min, y_min], [x_min + t, y_min], [x_min + t, y_max], [x_min, y_max]],
+        'right':  [[x_max - t, y_min], [x_max, y_min], [x_max, y_max], [x_max - t, y_max]],
+    }
+
+    for name, verts in walls.items():
+        mesh_name = f"world_{world_number}_wall_{name}.stl"
+        mesh_path = os.path.join(mesh_dir, mesh_name)
+        _create_stl(vertices=np.array(verts), height=1, filename=mesh_path)
 
 def main():
     env_to_world()

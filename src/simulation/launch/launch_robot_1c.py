@@ -42,7 +42,10 @@ def generate_launch_description():
 
     path_publisher_node = Node(
         package = 'path_planning',
-        executable = 'path_publisher_1c'
+        executable = 'path_publisher_1c',
+        parameters=[{
+            'qr_num' : world_num,
+        }]
     )
 
     # controller node
@@ -108,6 +111,8 @@ def generate_launch_description():
             'map_frame' : 'map',
             'base_frame' : 'base_footprint',
             'scan_topic': '/scan',
+            'resolution' : 0.025,
+            'max_laser_range': 6.0
         }]
     )
 

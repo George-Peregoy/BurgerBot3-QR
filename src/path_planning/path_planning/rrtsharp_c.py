@@ -94,8 +94,8 @@ class RRTSharp:
         How far to extend branches in steer. default=5
     time_limit : float
         Max time of RRT#. default=5
-    obstacles : list
-        List of obstacle which are a list of vertices. Ex [[1, 2, 3], [5, 6, 7]]. default=[]
+    map : nav_msgs.msg.OccupancyGrid
+        Ros map object.
     nodes : list
         List of Nodes.
     best_goal : Node
@@ -228,9 +228,20 @@ class RRTSharp:
 
     def _is_collision_free(self, from_node: Node, to_node: Node):
         """
-        Implements bresenham line algorithm to detect collisons
+        Uses Bresenham line algorithm to check for collisions.
 
-        TODO add docstrings
+        Parameters
+        ----------
+        from_point : tuple
+            Starting point.
+        to_point : tuple
+            Goal point.
+        inflated_map : nav_msgs.msg.OccupancyGrid
+            Inflated map object.
+
+        Returns
+        -------
+        True if collision else False.        
         """
 
         x0, y0 = from_node.x, from_node.y
@@ -289,7 +300,7 @@ class RRTSharp:
             return Node(x, y)
         else:
             # Uniform random sample in [0, 50] x [0, 50]
-            return Node(round(random.uniform(self.x_min, self.x_max)), round(random.uniform(self.y_min, self.y_max)))
+            return Node(random.uniform(self.x_min, self.x_max), random.uniform(self.y_min, self.y_max))
 
     def rrt_sharp(self):
         """
