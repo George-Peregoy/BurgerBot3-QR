@@ -36,7 +36,7 @@ def generate_launch_description():
 
     path_publisher_node = Node(
         package = 'path_planning',
-        executable = 'path_publisher_1',
+        executable = 'path_publisher_1b',
         parameters = [{
             'env_file': env_file,
             'world_num' : world_num

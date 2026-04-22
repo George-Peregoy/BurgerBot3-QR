@@ -62,14 +62,15 @@ class PathPublisher(Node):
         with open(self.env_file, 'rb')as f:
             obstacles = pickle.load(f)
 
-        self.obstacles = [Polygon(np.array(poly)) for poly in obstacles]
+        # self.obstacles = [Polygon(np.array(poly)) for poly in obstacles]
+        self.obstacles = []
 
         error_matrix = np.zeros((config.ENV_X_BOUNDS[1], config.ENV_Y_BOUNDS[1]))
         e_env = 0.0
         e = error(e_env, error_matrix)
 
-        rrt = RRTSharp(start = config.START, 
-                       goal = config.GOAL,
+        rrt = RRTSharp(start = (0, 0), 
+                       goal = (1, 1),
                        bounds = config.BOUNDS, 
                        obstacles=self.obstacles,
                        e = e,
@@ -87,7 +88,7 @@ class PathPublisher(Node):
         path_points : list
             List of points from RRT#.
 
-        Returns
+        Returnsx
         -------
         nav_path : Path
             nav_msgs.msg.Path object, contains array of PoseStamped.
