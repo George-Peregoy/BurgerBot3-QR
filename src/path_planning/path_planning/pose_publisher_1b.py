@@ -174,7 +174,7 @@ class PathPublisher(Node):
             root_dir = os.path.join(base_dir, '..', '..', '..', '..', '..', '..')
             qr_dir = os.path.join(root_dir, 'src', 'path_planning', 'qrcodes')
             
-            path_to_qr(path=path_str, output_dir=qr_dir, env_number=self.qr_num)
+            path_to_qr(path=path_str, output_dir=qr_dir, env_number=self.world_num)
 
 def main(args=None):
     rclpy.init(args=args)

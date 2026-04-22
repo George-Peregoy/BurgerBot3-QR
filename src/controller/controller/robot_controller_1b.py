@@ -73,7 +73,7 @@ class RobotController(Node):
  
         # get current pose
         odom_x = self.odom.pose.pose.position.x + config.START[0] * config.WORLD_SCALE
-        odom_y = self.odom.pose.pose.position.y + config.start[1] * config.WORLD_SCALE
+        odom_y = self.odom.pose.pose.position.y + config.START[1] * config.WORLD_SCALE
         odom_theta = self._quaternion_to_yaw(self.odom.pose.pose.orientation)
         
         self.get_logger().info(f"Current Odom -> x: {odom_x} y: {odom_y} theta: {odom_theta}\n")
