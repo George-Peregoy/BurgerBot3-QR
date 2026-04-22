@@ -68,9 +68,10 @@ class PathPublisher(Node):
         error_matrix = np.zeros((config.ENV_X_BOUNDS[1], config.ENV_Y_BOUNDS[1]))
         e_env = 0.0
         e = error(e_env, error_matrix)
-
-        rrt = RRTSharp(start = (0, 0), 
-                       goal = (1, 1),
+        
+        # odom start is (0, 0) this is accounted for in controller
+        rrt = RRTSharp(start = config.START, 
+                       goal = config.GOAL,
                        bounds = config.BOUNDS, 
                        obstacles=self.obstacles,
                        e = e,
