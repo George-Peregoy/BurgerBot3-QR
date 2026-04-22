@@ -46,7 +46,7 @@ def generate_launch_description():
     # controller node
     controller_node = Node(
         package = 'controller',
-        executable = 'controller_node'
+        executable = 'controller_node_1b'
     )
 
     return LaunchDescription([

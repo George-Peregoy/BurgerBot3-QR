@@ -21,7 +21,10 @@ setup(
          glob('meshes/*.stl')),
 
         (os.path.join('share', package_name, 'worlds'),
-         glob('worlds/*.world')) 
+         glob('worlds/*.world')),
+
+        (os.path.join('share', package_name, 'rviz'),
+         glob('rviz/*.rviz'))
     ],
     
     install_requires=[

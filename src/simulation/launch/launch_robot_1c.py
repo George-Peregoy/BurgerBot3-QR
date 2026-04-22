@@ -7,7 +7,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
 from path_planning import config
-
+import os
 
 def generate_launch_description():
  
@@ -112,7 +112,18 @@ def generate_launch_description():
             'base_frame' : 'base_footprint',
             'scan_topic': '/scan',
             'resolution' : 0.025,
-            'max_laser_range': 6.0
+            'max_laser_range': 6.0,
+            'map_update_interval' : 0.5,
+            'transform_publish_period' : 0.02,
+            'loop_closure_enabled': True,
+            'loop_search_maximum_distance': 5.0,
+            'loop_match_minimum_chain_size': 10,
+            'loop_match_maximum_variance_coarse': 3.0,
+            'loop_match_minimum_response_coarse': 0.2,
+            'loop_match_minimum_response_fine': 0.35,
+            'minimum_travel_distance': 0.3,
+            'minimum_travel_heading': 0.3,
+            'map_update_interval': 0.3,
         }]
     )
 
@@ -123,6 +134,12 @@ def generate_launch_description():
         arguments=['0', '0', '0.2', '0', '0', '0', 'base_footprint', 'base_scan']
     )
 
+    rviz_node = Node(
+    package='rviz2',
+    executable='rviz2',
+    arguments=['-d', os.path.join(get_package_share_directory('simulation'), 'rviz', 'robot1.rviz')]
+    )
+
     return LaunchDescription([
         set_model_path,
         model_arg,
@@ -131,6 +148,7 @@ def generate_launch_description():
         log_world,
         gazebo,
         spawn_turtlebot, 
+        rviz_node,
         slam_node,
         static_tf_node,
         path_publisher_node,

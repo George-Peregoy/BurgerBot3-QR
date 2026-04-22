@@ -2,7 +2,7 @@ from path_planning import config
 from path_planning.rrtsharp_c import RRTSharp, error
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
 from nav_msgs.msg import Odometry, OccupancyGrid, Path
 from std_msgs.msg import Bool
 from path_planning.path_to_qr import path_to_qr
@@ -58,6 +58,11 @@ class PathPublisher(Node):
         self.visited_cells = set() # purely tracking metric
         self.visited_targets = set()
 
+        self.is_sampling = False # don't sample while already sampling
+        # if path invalid stop while replanning
+        self.cmd_vel_publisher = self.create_publisher(Twist, 'cmd_vel', 10) 
+
+
     # ------------------------------------------------------------------
     # Timer
     # ------------------------------------------------------------------
@@ -91,15 +96,19 @@ class PathPublisher(Node):
             qr_dir = os.path.join(root_dir, 'src', 'path_planning', 'qrcodes')
             path_to_qr(path=path_str, output_dir=qr_dir, env_number=self.qr_num)
 
-            self.get_logger().info("DONE SAVING")
+            self.get_logger().info("DONE SAVING\n")
             self.saved = True
             return
 
         if self.at_end and not self.done:
+            if self.is_sampling:
+                return # skip sampling if already doing it
             self.at_end = False
+            self.is_sampling = True
             self.get_logger().info("SAMPLING")
             self.path_msg = self.sample()
-            self.get_logger().info("DONE SAMPLING")
+            self.get_logger().info("DONE SAMPLING\n")
+            self.is_sampling = False
             
             if self.path_msg is None:
                 self.at_end = True # keep sampling if nothing
@@ -108,7 +117,9 @@ class PathPublisher(Node):
             if self._path_still_valid():
                 self.publisher_.publish(self.path_msg)
             else:
-                self.get_logger().info("PATH INVALIDATED — replanning")
+                self.get_logger().info("PATH INVALIDATED — replanning\n")
+                stop_msg = Twist()  # stop moving
+                self.cmd_vel_publisher.publish(stop_msg)
                 self.at_end = True  # trigger resample
 
     # ------------------------------------------------------------------
@@ -132,6 +143,7 @@ class PathPublisher(Node):
         if self.map_data is not None:
             row, col = self._world_to_grid(self.odom_x, self.odom_y)
             self.visited_cells.add((row, col)) # track cells visited 
+            
 
     def at_end_callback(self, msg):
         """
@@ -142,7 +154,7 @@ class PathPublisher(Node):
         """
         self.get_logger().info("IN AT_END CALLBACK")
         if msg.data and not self.at_end:
-            self.get_logger().info("AT END — triggering resample")
+            self.get_logger().info("AT END — triggering resample\n")
             self.at_end = True
 
     def map_callback(self, msg):
@@ -161,12 +173,12 @@ class PathPublisher(Node):
         self.map_origin_x = msg.info.origin.position.x
         self.map_origin_y = msg.info.origin.position.y
         
-        self.nav_rad  = 1 # just what worked - for A* path planning
+        self.nav_rad  = int(np.floor(config.ROBOT_RADIUS / self.map_resolution)) # for A* path planning
         self.full_rad = int(np.ceil(config.ROBOT_RADIUS / self.map_resolution)) # used in frontier selection
         cost_rad = self.full_rad * 3  # used in cost gradient - A*
 
         # buffer maps 
-        self.nav_inflated  = self._inflate_map(self.map_data, self.map_width, self.map_height, self.nav_rad)
+        self.nav_inflated  = self._inflate_map(self.map_data, self.map_width, self.map_height, self.nav_rad) 
         self.full_inflated = self._inflate_map(self.map_data, self.map_width, self.map_height, self.full_rad)
         self.cost_map_data = self._make_cost_map(self.map_data, self.map_width, self.map_height, cost_rad)
 
@@ -201,6 +213,33 @@ class PathPublisher(Node):
         if self.odom is None:
             self.get_logger().warn("No odom\n")
             return None
+        
+        # get current distance from goal
+        robot_to_goal = np.sqrt(
+            (self.odom_x - self.world_goal[0])**2 +
+            (self.odom_y - self.world_goal[1])**2
+        )
+        
+        # if near goal DONE
+        if robot_to_goal <= 0.3:
+            self.get_logger().info("DONE\n")
+            self.done    = True
+            self.at_end  = True
+            return None
+        
+        # check if goal is already mapped and reachable
+        goal_row, goal_col = self._world_to_grid(self.world_goal[0], self.world_goal[1])
+        goal_row = max(0, min(goal_row, self.map_height - 1))
+        goal_col = max(0, min(goal_col, self.map_width - 1))
+        goal_val = self.map_data[goal_row * self.map_width + goal_col]
+        
+        if goal_val == 0:  # goal is mapped and free
+            path = self._plan_path(self.world_goal[0], self.world_goal[1], goal_row, goal_col)
+            if path is not None and len(path) >= 2:
+                self.get_logger().info("GOAL REACHABLE — planning directly")
+                path = self._prune_path_los(path)
+                return self._path_to_nav_path(path)
+            
 
         self.get_logger().info(f"Getting candidates\n")
         candidates = self._get_candidates(self.full_inflated) # get frontiers
@@ -212,9 +251,12 @@ class PathPublisher(Node):
         clusters = self._build_clusters(candidates) # cluster them
 
         if not clusters:
-            self.get_logger().info("All clusters visited — clearing targets")
+            self.get_logger().info("All clusters visited — clearing targets\n") # just in case
             self.visited_targets.clear() # clear visited if not done and no clusters
             clusters = self._build_clusters(candidates)
+            self.get_logger().info(f"Num visited {len(self.visited_cells)}")
+            self.get_logger().info(f"visited_targets size: {len(self.visited_targets)}")
+            self.get_logger().info(f"Num clusters: {len(cluster)}\n")
 
         for cluster, score, best in clusters:
             if best in self.visited_targets:
@@ -224,26 +266,11 @@ class PathPublisher(Node):
             path = self._plan_path(x, y, row, col) # use A* to plan path
             if path is None or len(path) < 2:
                 continue
-            self.get_logger().info(f"Path result: {len(path) if path is not None else None}\n")
+            self.get_logger().info(f"Path result: {len(path) if path is not None else None}")
             path = self._prune_path_los(path) # use line of sight pruning to minimize waypoints
             self.get_logger().info(f"Pruned path length: {len(path)}, first: {path[0]}, last: {path[-1]}\n")
-            self.get_logger().info(f"Length of visited: {len(self.visited_cells)}\n")
-
-            # get current distance from goal
-            robot_to_goal = np.sqrt(
-                (self.odom_x - self.world_goal[0])**2 +
-                (self.odom_y - self.world_goal[1])**2
-            )
-            
-            # if near goal DONE
-            if robot_to_goal <= 0.3:
-                self.get_logger().info("DONE")
-                self.done    = True
-                self.at_end  = True
-                return None
 
             self.get_logger().info("SAMPLE FOUND")
-            self.get_logger().info(f"visited_targets size: {len(self.visited_targets)}")
             self.visited_targets.add((row, col)) # add best to visited
             return self._path_to_nav_path(path)
 
@@ -462,7 +489,6 @@ class PathPublisher(Node):
             self.get_logger().info(f"Goal cell not free in inflated ({goal_val}), skipping")
             return None
         
-        self.get_logger().info(f"Running A* from ({sx:.3f},{sy:.3f}) to ({goal_x:.3f},{goal_y:.3f})")
         astar = Astar((sx, sy), (goal_x, goal_y), self.nav_map, cost_map=self.cost_map, max_iter=10000)
         return astar.astar()
 
@@ -520,7 +546,7 @@ class PathPublisher(Node):
             dist_to_robot = np.sqrt((self.odom_x-x)**2 + (self.odom_y-y)**2)
 
             # score centroid
-            alpha = 1.0 # arbitrary 
+            alpha = 2.5 
             beta = 0.5
             gamma = 0.5
             score = alpha * dist_to_goal - beta * dist_to_robot - gamma * size

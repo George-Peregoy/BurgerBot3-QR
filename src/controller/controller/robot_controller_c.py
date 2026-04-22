@@ -40,6 +40,8 @@ class RobotController(Node):
         self.kp = 0.8
         self.k_theta = 2.5
 
+        self.at_end_sent = False # help prevent sampling before finished
+
     def path_callback(self, msg):
         """
         Receives nav_msgs.msg.Path object from path planning node.
@@ -51,7 +53,7 @@ class RobotController(Node):
         new_end   = (msg.poses[-1].pose.position.x, msg.poses[-1].pose.position.y)
 
         if new_start != self.path_start or new_end != self.path_end:
-            self.get_logger().info("NEW PATH — resetting index")
+            self.get_logger().info("NEW PATH — resetting index\n")
             self.path = msg.poses
             self.path_index = 0
             self.path_start = new_start
@@ -81,6 +83,8 @@ class RobotController(Node):
             return
 
         if self.path_index >= len(self.path): # if at path end don't move, trigger end of path
+            if self.at_end_sent:
+                return # if sent once skip
             vel_msg = Twist()
             self.publisher_.publish(vel_msg)
             at_end_msg = Bool()
