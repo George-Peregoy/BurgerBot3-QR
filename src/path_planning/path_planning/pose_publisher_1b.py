@@ -5,7 +5,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from  std_msgs.msg import Bool
-from path_planning.path_to_qr import path_to_qr
+from path_planning.path_to_qr import path_to_qr, path_to_qr_printer
 from path_planning.path_pruning import fit_to_qr
 import numpy as np
 import pickle
@@ -173,7 +173,7 @@ class PathPublisher(Node):
             root_dir = os.path.join(base_dir, '..', '..', '..', '..', '..', '..')
             qr_dir = os.path.join(root_dir, 'src', 'path_planning', 'qrcodes')
             
-            path_to_qr(path=path_str, output_dir=qr_dir, env_number=self.world_num)
+            path_to_qr_printer(path=path_str, output_dir=qr_dir, env_number=self.world_num)
 
 def main(args=None):
     rclpy.init(args=args)
