@@ -50,14 +50,14 @@ pip install -r requirements.txt
 
 ### 4. Build the Workspace
 ```bash
-cd ~/turt-qr
+cd ~/BurgerBot3-QR
 colcon build
 source install/setup.bash
 ```
 
 ## Package Structure
 
-The workspace is split into three packages. Path planning is used to read and save qr data, find a viable path, and pruning. Controller subscribes to the path and finds cmd_vel. Simulation handles the launch files, converting the 2D obstacles into stl files, and combining the stl files into a proper world file. 
+The workspace is split into three packages. Path planning is used to read and save qr data, find a viable path, and pruning. Controller subscribes to the path and finds cmd_vel. Simulation handles the launch files, converting the 2D obstacles into stl files, and combining the stl files into a proper world file. There are three variations of files, main, b, and c. The .b files are for physical Burger Bots, the .c files are for a SLAM implementation in simulation.
 
 ### path_planning
 
@@ -67,24 +67,23 @@ The workspace is split into three packages. Path planning is used to read and sa
 ├── LICENSE
 ├── package.xml
 ├── path_planning
+│   ├── astar.py
 │   ├── config.py
 │   ├── ellipses2.py
 │   ├── gen_obstacles.py
-│   ├── __init__.py
+│   ├── path_pruning_c.py
 │   ├── path_pruning.py
 │   ├── path_to_qr.py
+│   ├── pose_publisher_1b.py
+│   ├── pose_publisher_1c.py
 │   ├── pose_publisher_1.py
+│   ├── pose_publisher_2c.py
 │   ├── pose_publisher_2.py
-│   ├── __pycache__
-│   │   ├── config.cpython-310.pyc
-│   │   └── ellipses2.cpython-310.pyc
 │   ├── qr_reader_node.py
+│   ├── rrtsharp_c.py
 │   └── rrtsharp.py
 ├── qrcodes/
-├── resource/
-├── setup.cfg
 ├── setup.py
-└── test/
 ```
 
 **Nodes:**
@@ -92,6 +91,9 @@ The workspace is split into three packages. Path planning is used to read and sa
 - `pose_publisher_1.py` - Uses RRT# to navigate environment, publishes /path as nav_msgs/msg/Path, saves qr code to src/path_planning/qrcodes/.
 - `pose_publisher_2.py` - Subscribes to /qr_data, converts data to nav_msgs/msg/Path, publishes /path.
 - `qr_reader_node.py` - Reads QR code, publishes path as string.
+- `pose_publisher_1b.py` - pose_publisher_1.py variation for phsyical Burger Bot.
+- `pose_publisher_1c.py` - pose_publisher_1.py variation replacing RRT# with frontier search and A* path planning. 
+- `pose_publisher2c.py` - Not yet implemented.
 
 **Utlilities:**
 
@@ -100,7 +102,9 @@ The workspace is split into three packages. Path planning is used to read and sa
 - `path_pruning.py` - Prunes path by line of sight, then if needed prunes using ellipse.
 - `path_to_qr.py` - Converts a list of points to a string to be saved as a Qr code.
 - `rrtsharp.py` - Handles RRT# path planning.
-
+- `astar.py` - Handles A* path planning.
+- `path_pruning_c.py` - Path pruning script made to run on /map.
+- `rrtsharp_c.py` - RRT# script made to find path using /map.
 
 ### controller
 
@@ -108,18 +112,20 @@ The workspace is split into three packages. Path planning is used to read and sa
 .
 ├── controller
 │   ├── __init__.py
+│   └── robot_controller_1b.py
+│   ├── robot_controller_c.py
 │   └── robot_controller.py
 ├── LICENSE
 ├── package.xml
-├── resource/
-├── setup.cfg
 ├── setup.py
 └── test/
 ```
 
 **Nodes:**
 
-- `robot_controller.py` - Subscribes to /path, finds publishes desired linear and angular velocity as type geometry_msgs/msg/Twist to topic /cmd_vel.
+- `robot_controller.py` - Subscribes to /path, publishes desired linear and angular velocity as type geometry_msgs/msg/Twist to topic /cmd_vel.
+- `robot_controller_1b.py` - Subscribes to /path, publishes desired linear and angular velocity as type geometry_msgs/msg/Twist to topic /cmd_vel. For physical Burger Bot.
+- `robot_controller_c.py` - Subscribes to /path, publishes desired linear and angular velocity as type geometry_msgs/msg/Twist to topic /cmd_vel. For SLAM simulation.
 
 ### simulation
 
@@ -128,7 +134,11 @@ The workspace is split into three packages. Path planning is used to read and sa
 ├── build/
 ├── install/
 ├── launch
+│   ├── launch_robot_1b.py
+│   ├── launch_robot_1c.py
 │   ├── launch_robot_1.py
+│   ├── launch_robot_2b.py
+│   ├── launch_robot_2c.py
 │   └── launch_robot_2.py
 ├── LICENSE
 ├── log/
@@ -149,6 +159,11 @@ The workspace is split into three packages. Path planning is used to read and sa
 
 - `launch_robot_1.py` - Starts robot 1 simulation. Accepts world number as launch argument as world_num:=0
 - `launch_robot_2.py` - Starts robot 2 simulation. Accepts world number as launch argument as world_num:=0
+- `launch_robot_1b.py` - Starts robot 1. Accepts world number as launch argument as world_num:=0
+- `launch_robot_2b.py` - Starts robot 1. Accepts world number as launch argument as world_num:=0
+- `launch_robot_1c.py` - Starts robot 1 SLAM simulation. Accepts world number as launch argument as world_num:=0
+- `launch_robot_2c.py` - NOT YET IMPLEMETED
+
 
 **Utilities:**
 
@@ -159,14 +174,14 @@ The workspace is split into three packages. Path planning is used to read and sa
 
 Key global variables in src/path_planning/config.py
 
-- `ENV_X_BOUNDS = (0, 50)` - Environment X bounds (grid units)
-- `ENV_Y_BOUNDS = (0, 50)` - Environment Y bounds (grid units)
-- `START = (45, 45)` - Robot 1 start / Robot 2 goal (grid units)
-- `GOAL = (5, 5)` - Robot 2 start / Robot 1 goal (grid units)
+- `ENV_X_BOUNDS = (0, 20)` - Environment X bounds (grid units)
+- `ENV_Y_BOUNDS = (0, 20)` - Environment Y bounds (grid units)
+- `START = (5, 5)` - Robot 1 start / Robot 2 goal (grid units)
+- `GOAL = (15, 15)` - Robot 2 start / Robot 1 goal (grid units)
 - `ROBOT_RADIUS = 0.105` - TurtleBot3 Burger radius (meters)
 - `BUFFER = 0.125` - Total obstacle clearance (meters)
 - `WORLD_SCALE = 0.1` - Conversion: meters per grid cell
-- `STEP_SIZE = 5` - RRT# branch length (grid units)
+- `STEP_SIZE = 2` - RRT# branch length (grid units)
 - `CHAR_LIMIT = 25` - Max QR code characters (alphanumeric)
 
 ## Usage
@@ -178,9 +193,11 @@ To launch robot 1 run `ros2 launch simulation launch_robot_1.py world_num:=0`. N
 
 To launch robot 2 run `ros2 launch simulation launch_robot_2.py world_num:=0`. Note that the world_num argument is optional and defaults to 0.
 
+To launch the other files follow same convention as above replacing the number with desired file. Example `ros2 launch simulation launch_robot_1b.py world_num:=0`
+
 ## Architecture Diagram 
 
-These are the ROS2 rqt graphs for each robot.
+These are the ROS2 rqt graphs for each robot on RRT# based simulation.
 
 ### Robot 1
 
