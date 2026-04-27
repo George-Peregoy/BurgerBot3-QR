@@ -7,7 +7,6 @@ from nav_msgs.msg import Path
 from  std_msgs.msg import Bool
 from path_planning.path_to_qr import path_to_qr
 from path_planning.path_pruning import fit_to_qr
-from shapely import Polygon
 import numpy as np
 import pickle
 import os

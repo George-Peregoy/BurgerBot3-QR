@@ -17,14 +17,14 @@ follows the stored path to its end.
 
 **HTTPS:**
 ```bash
-git clone https://github.com/George-Peregoy/turt-qr.git
-cd turt-qr
+git clone https://github.com/George-Peregoy/BurgerBot3-QR.git
+cd BurgerBot3-QR
 ```
 
 **SSH:**
 ```bash
-git clone git@github.com:George-Peregoy/turt-qr.git
-cd turt-qr
+git clone git@github.com:George-Peregoy/BurgerBot3-QR.git
+cd BurgerBot3-QR
 ```
 
 ### 2. Install System Dependencies

@@ -26,8 +26,8 @@ def main(num_worlds):
     max_sides = 4
     x_bounds = config.ENV_X_BOUNDS
     y_bounds = config.ENV_Y_BOUNDS
-    max_area_ratio = 0.1
-    max_side_length = 20
+    max_area_ratio = 0.05
+    max_side_length = 5
 
     # set up dirs
     base_dir = os.path.abspath(os.path.dirname(__file__))
