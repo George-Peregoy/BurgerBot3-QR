@@ -23,7 +23,7 @@ cd BurgerBot3-QR
 
 **SSH:**
 ```bash
-git clone git@github.com:George-Peregoy/BurgerBot3-QR.git
+git clone git@github.com:George-Peregoy/BurgerBot3-QR.git 
 cd BurgerBot3-QR
 ```
 
@@ -39,9 +39,9 @@ pip install -r requirements.txt
 ```
 
 **Required packages:**
-- Numpy==1.21.5
+- numpy==2.2.6
 - scipy==1.8.0
-- matplotlib==3.5.1
+- matplotlib==3.10.9
 - shapely==2.1.2
 - imageio==2.37.2
 - qrcode==8.2
@@ -57,7 +57,7 @@ source install/setup.bash
 
 ## Package Structure
 
-The workspace is split into three packages. Path planning is used to read and save qr data, find a viable path, and pruning. Controller subscribes to the path and finds cmd_vel. Simulation handles the launch files, converting the 2D obstacles into stl files, and combining the stl files into a proper world file. There are three variations of files, main, b, and c. The .b files are for physical Burger Bots, the .c files are for a SLAM implementation in simulation.
+The workspace is split into three packages. Path planning is used to read and save qr data, find a viable path, and pruning. Controller subscribes to the path and finds cmd_vel. Simulation handles the launch files, converting the 2D obstacles into stl files, and combining the stl files into a proper world file. There are two variations of files, main, and b. The .b files are for physical Burger Bots.
 
 ### path_planning
 
@@ -67,20 +67,15 @@ The workspace is split into three packages. Path planning is used to read and sa
 ├── LICENSE
 ├── package.xml
 ├── path_planning
-│   ├── astar.py
 │   ├── config.py
 │   ├── ellipses2.py
 │   ├── gen_obstacles.py
-│   ├── path_pruning_c.py
 │   ├── path_pruning.py
 │   ├── path_to_qr.py
 │   ├── pose_publisher_1b.py
-│   ├── pose_publisher_1c.py
 │   ├── pose_publisher_1.py
-│   ├── pose_publisher_2c.py
 │   ├── pose_publisher_2.py
 │   ├── qr_reader_node.py
-│   ├── rrtsharp_c.py
 │   └── rrtsharp.py
 ├── qrcodes/
 ├── setup.py
@@ -92,8 +87,6 @@ The workspace is split into three packages. Path planning is used to read and sa
 - `pose_publisher_2.py` - Subscribes to /qr_data, converts data to nav_msgs/msg/Path, publishes /path.
 - `qr_reader_node.py` - Reads QR code, publishes path as string.
 - `pose_publisher_1b.py` - pose_publisher_1.py variation for phsyical Burger Bot.
-- `pose_publisher_1c.py` - pose_publisher_1.py variation replacing RRT# with frontier search and A* path planning. 
-- `pose_publisher2c.py` - Not yet implemented.
 
 **Utlilities:**
 
@@ -102,9 +95,6 @@ The workspace is split into three packages. Path planning is used to read and sa
 - `path_pruning.py` - Prunes path by line of sight, then if needed prunes using ellipse.
 - `path_to_qr.py` - Converts a list of points to a string to be saved as a Qr code.
 - `rrtsharp.py` - Handles RRT# path planning.
-- `astar.py` - Handles A* path planning.
-- `path_pruning_c.py` - Path pruning script made to run on /map.
-- `rrtsharp_c.py` - RRT# script made to find path using /map.
 
 ### controller
 
@@ -113,7 +103,6 @@ The workspace is split into three packages. Path planning is used to read and sa
 ├── controller
 │   ├── __init__.py
 │   └── robot_controller_1b.py
-│   ├── robot_controller_c.py
 │   └── robot_controller.py
 ├── LICENSE
 ├── package.xml
@@ -125,7 +114,6 @@ The workspace is split into three packages. Path planning is used to read and sa
 
 - `robot_controller.py` - Subscribes to /path, publishes desired linear and angular velocity as type geometry_msgs/msg/Twist to topic /cmd_vel.
 - `robot_controller_1b.py` - Subscribes to /path, publishes desired linear and angular velocity as type geometry_msgs/msg/Twist to topic /cmd_vel. For physical Burger Bot.
-- `robot_controller_c.py` - Subscribes to /path, publishes desired linear and angular velocity as type geometry_msgs/msg/Twist to topic /cmd_vel. For SLAM simulation.
 
 ### simulation
 
@@ -135,10 +123,8 @@ The workspace is split into three packages. Path planning is used to read and sa
 ├── install/
 ├── launch
 │   ├── launch_robot_1b.py
-│   ├── launch_robot_1c.py
 │   ├── launch_robot_1.py
 │   ├── launch_robot_2b.py
-│   ├── launch_robot_2c.py
 │   └── launch_robot_2.py
 ├── LICENSE
 ├── log/
@@ -161,9 +147,6 @@ The workspace is split into three packages. Path planning is used to read and sa
 - `launch_robot_2.py` - Starts robot 2 simulation. Accepts world number as launch argument as world_num:=0
 - `launch_robot_1b.py` - Starts robot 1. Accepts world number as launch argument as world_num:=0
 - `launch_robot_2b.py` - Starts robot 1. Accepts world number as launch argument as world_num:=0
-- `launch_robot_1c.py` - Starts robot 1 SLAM simulation. Accepts world number as launch argument as world_num:=0
-- `launch_robot_2c.py` - NOT YET IMPLEMETED
-
 
 **Utilities:**
 

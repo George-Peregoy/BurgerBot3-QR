@@ -7,6 +7,7 @@ from nav_msgs.msg import Path
 from  std_msgs.msg import Bool
 from path_planning.path_to_qr import path_to_qr, path_to_qr_printer
 from path_planning.path_pruning import fit_to_qr
+from shapely import Polygon
 import numpy as np
 import pickle
 import os
@@ -61,8 +62,7 @@ class PathPublisher(Node):
         with open(self.env_file, 'rb')as f:
             obstacles = pickle.load(f)
 
-        # self.obstacles = [Polygon(np.array(poly)) for poly in obstacles]
-        self.obstacles = []
+        self.obstacles = [Polygon(np.array(poly)) for poly in obstacles]
 
         error_matrix = np.zeros((config.ENV_X_BOUNDS[1], config.ENV_Y_BOUNDS[1]))
         e_env = 0.0
@@ -160,6 +160,8 @@ class PathPublisher(Node):
     def goal_callback(self, at_goal_msg):
 
         if at_goal_msg.data == True:
+
+            self.get_logger().info(f"PATH POINTS {self.path_points}\n")
 
             path_str = fit_to_qr(path=self.path_points, 
                                 obstacles=self.obstacles, 

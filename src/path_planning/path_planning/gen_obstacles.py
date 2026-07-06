@@ -130,7 +130,7 @@ def main():
     max_sides = 4
     x_bounds = config.ENV_X_BOUNDS
     y_bounds = config.ENV_Y_BOUNDS
-    max_area_ratio = 0.1
+    max_area_ratio = 0.15
     max_side_length = 20
 
     for i in range(num_environments):
