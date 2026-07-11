@@ -36,7 +36,7 @@ def generate_launch_description():
 
     path_publisher_node = Node(
         package = 'path_planning',
-        executable = 'path_publisher_2',
+        executable = 'path_publisher_2b',
         parameters = [{
             'env_file': env_file
         }]
@@ -45,16 +45,13 @@ def generate_launch_description():
     # QR reader node
     qr_reader_node = Node(
         package = 'path_planning',
-        executable = 'qr_reader_node',
-        parameters = [{
-            'qr_num' : world_num
-        }]
+        executable = 'qr_reader_node_b',
     )
 
     # controller node
     controller_node = Node(
         package = 'controller',
-        executable = 'controller_node'
+        executable = 'controller_node_2b'
     )
 
     return LaunchDescription([

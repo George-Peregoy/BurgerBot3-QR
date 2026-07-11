@@ -30,7 +30,8 @@ setup(
         'shapely',
         'qrcode',
         'pyzbar',
-        'pillow'
+        'pillow',
+        'cv2'
         ],
     
     zip_safe=True,
@@ -51,6 +52,8 @@ setup(
             'qr_reader_node = path_planning.qr_reader_node:main',
             'path_publisher_1 = path_planning.pose_publisher_1:main',
 	        'path_publisher_1b = path_planning.pose_publisher_1b:main',
+            'qr_reader_node_b = path_planning.qr_reader_node_b:main',
+            'path_publisher_2b = path_planning.pose_publisher_2b:main',
         ],
     },
 )
