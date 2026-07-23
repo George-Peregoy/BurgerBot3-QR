@@ -1,6 +1,9 @@
 import rclpy
-from rclpy.action import ActionServer
+from rclpy.action import ActionServer, CancelResponse
 from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import ReentrantCallbackGroup
 
 from ebs_printer_interfaces.action import PrintQR
 
@@ -27,7 +30,18 @@ class EBSPrinterActionServer(Node):
 
         self.client.login()   # persistent session
 
-        self._action_server = ActionServer(self, PrintQR, 'print_qr', execute_callback=self.execute_callback,)
+        self._action_server = ActionServer(
+            self, PrintQR, 'print_qr', 
+            execute_callback=self.execute_callback,
+            cancel_callback=self.cancel_callback,
+            callback_group=ReentrantCallbackGroup(),
+        )
+
+        self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)    # publish movement command to bot for printing
+
+    def cancel_callback(self, goal_handle):
+        self.get_logger().info('Cancel requested')
+        return CancelResponse.ACCEPT    # allows cancels mid execution (can't touch self.client here)
 
     def execute_callback(self, goal_handle):
         feedback = PrintQR.Feedback()
@@ -52,19 +66,61 @@ class EBSPrinterActionServer(Node):
             stage('UPLOADING')
             self.client.upload(exp_path)
 
+            stage('SELECTING')
+            project_path = '/' + os.path.basename(prj_path)
+            self.client.select(project_path)
+
+            if goal_handle.is_cancel_requested:
+                goal_handle.canceled()
+                result.success = False
+                result.message = 'Cancelled before printing'
+                return result
+
+            stage('ARMING')
+            self.client.start()     # arm the printer for printing
+
             stage('PRINTING')
-            self.client.print_project('/' + os.path.basename(prj_path), duration=2.0)   # -> print /path.prj
+            self._drive_print_stroke(goal_handle)   # roll forward to print QR code
+            # self.client.print_project('/' + os.path.basename(prj_path), duration=2.0) # -> print /path.prj
+
+            stage('STOPPING')
+            self.client.stop()      # end printing mode
+
+            if goal_handle.is_cancel_requested:
+                goal_handle.canceled()  # mark goal handle as canceled
+                result.success = False
+                result.message = 'Print cancelled'
+                return result
             
             goal_handle.succeed()
             result.success = True
             result.message = 'OK'
+
         except (EBSError, requests.exceptions.RequestException) as e:
+            try:
+                self.client.stop()  # disarm on error
+            except Exception:
+                pass
             self.get_logger().error(f'Print job failed: {e}')
             goal_handle.abort()
             result.success = False
             result.message = str(e)
         
         return result
+
+    def _drive_print_stroke(self, goal_handle):
+        twist = Twist()
+        twist.linear.x = printer_config.PRINT_SPEED     # speed in m/s
+        end = time.time() + printer_config.PRINT_STROKE_SEC
+        try:
+            while time.time() < end:
+                if goal_handle.is_cancel_requested:
+                    self.get_logger().warn('Stroke cancelled')
+                    break
+                self.cmd_vel_pub.publish(twist)
+                time.sleep(0.05)    # ~ 20 Hz
+        finally:
+            self.cmd_vel_pub.publish(Twist())   # safeguard to make sure robot stops
     
     def destroy_node(self):
         try:
@@ -78,6 +134,10 @@ class EBSPrinterActionServer(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = EBSPrinterActionServer()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin()
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
