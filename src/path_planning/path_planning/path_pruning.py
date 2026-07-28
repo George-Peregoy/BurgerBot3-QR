@@ -38,7 +38,7 @@ def _score_nodes(path: list, e: error, step_size: int):
         for dx in range(-step_size, step_size + 1):
             for dy in range(-step_size, step_size + 1):
                 nx, ny = x + dx, y + dy
-                if 0 <= nx < 50 and 0 <= ny < 50:
+                if config.ENV_X_BOUNDS[0] <= nx < config.ENV_X_BOUNDS[1] and config.ENV_Y_BOUNDS[0] <= ny < config.ENV_Y_BOUNDS[1]:
                     score += error_matrix[nx][ny]
         
         scores.append(score / total_samples if total_samples > 0 else 0)
