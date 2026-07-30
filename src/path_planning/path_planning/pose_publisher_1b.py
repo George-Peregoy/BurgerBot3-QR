@@ -9,6 +9,7 @@ from path_planning.path_to_qr import path_to_qr, path_to_qr_printer
 from path_planning.path_pruning import fit_to_qr
 from rclpy.action import ActionClient
 from ebs_printer_interfaces.action import PrintQR
+from shapely import Polygon
 import numpy as np
 import pickle
 import os
@@ -32,6 +33,10 @@ class PathPublisher(Node):
 
         self.path_points = self._get_path()
         self.path_msg = self._path_to_poses(self.path_points)
+
+        # setup printer action interface
+        self.print_client = ActionClient(self, PrintQR, 'print_qr')
+        self._print_sent = False   # one-shot guard
 
         # subscribe to at_goal and then generate qr
         self.at_goal_sub = self.create_subscription(
@@ -63,8 +68,7 @@ class PathPublisher(Node):
         with open(self.env_file, 'rb')as f:
             obstacles = pickle.load(f)
 
-        # self.obstacles = [Polygon(np.array(poly)) for poly in obstacles]
-        self.obstacles = []
+        self.obstacles = [Polygon(np.array(poly)) for poly in obstacles]
 
         error_matrix = np.zeros((config.ENV_X_BOUNDS[1], config.ENV_Y_BOUNDS[1]))
         e_env = 0.0
@@ -79,6 +83,7 @@ class PathPublisher(Node):
                        )
         
         path, nodes, self.e = rrt.rrt_sharp()
+        self.get_logger().info(f"Initial path: {path}")
         return path
 
     def _path_to_poses(self, path_points):
@@ -195,7 +200,7 @@ class PathPublisher(Node):
             
             qr_dir = os.path.join(os.path.expanduser('~'), 'BurgerBot3-QR', 'src', 'path_planning', 'qrcodes')
             
-            # path_to_qr_printer(path=path_str, output_dir=qr_dir, env_number=self.world_num)
+            path_to_qr_printer(path=path_str, output_dir=qr_dir, env_number=self.world_num)
 
             self._send_print_goal(path_str)
 
