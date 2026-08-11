@@ -49,8 +49,14 @@ def generate_launch_description():
         executable = 'controller_node_1b'
     )
 
+    ebs_node = Node(
+        package = 'ebs_printer_node',
+        executable = 'ebs_printer_node'
+    )
+
     return LaunchDescription([
         world_num_arg,
+        ebs_node,
         robot_bringup,
         path_publisher_node,
         controller_node
